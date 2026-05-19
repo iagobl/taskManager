@@ -3,14 +3,27 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using TaskManager.Api.Data;
-using TaskManager.Api.Services.Implementations;
-using TaskManager.Api.Services.Interfaces;
+using TaskManager.Api.Middleware;
 using TaskManager.Api.Repositories.Implementations;
 using TaskManager.Api.Repositories.Interfaces;
-using TaskManager.Api.Middleware;
+using TaskManager.Api.Services.Implementations;
+using TaskManager.Api.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File(
+        "Logs/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Controllers
 builder.Services.AddControllers();
@@ -107,6 +120,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Serilog HTTP request logging
+app.UseSerilogRequestLogging();
 
 // Global exception handling middleware
 app.UseMiddleware<ExceptionMiddleware>();
