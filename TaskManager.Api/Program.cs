@@ -8,6 +8,7 @@ using TaskManager.Api.Services.Implementations;
 using TaskManager.Api.Services.Interfaces;
 using TaskManager.Api.Repositories.Implementations;
 using TaskManager.Api.Repositories.Interfaces;
+using TaskManager.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +107,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Global exception handling middleware
+app.UseMiddleware<ExceptionMiddleware>();
 
 // HTTP pipeline
 if (app.Environment.IsDevelopment())
