@@ -6,6 +6,8 @@ using Microsoft.OpenApi.Models;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services.Implementations;
 using TaskManager.Api.Services.Interfaces;
+using TaskManager.Api.Repositories.Implementations;
+using TaskManager.Api.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
