@@ -30,6 +30,9 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<ITagService, TagService>();
+
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
 
