@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using TaskManager.Api.Data;
 using TaskManager.Api.Services.Implementations;
 using TaskManager.Api.Services.Interfaces;
@@ -15,10 +16,10 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Services
+// Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Authentication JWT
+// JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrWhiteSpace(jwtKey))
@@ -49,18 +50,49 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// OpenAPI / Swagger
-builder.Services.AddOpenApi();
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "TaskManager.Api",
+        Version = "v1",
+        Description = "REST API for managing projects, tasks, categories, tags and comments."
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Introduce el token JWT con el formato: Bearer {token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
-// Pipeline HTTP
+// HTTP pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
     app.UseSwagger();
     app.UseSwaggerUI();
 }
