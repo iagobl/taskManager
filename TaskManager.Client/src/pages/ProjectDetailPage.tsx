@@ -8,14 +8,18 @@ import {
     Clock3,
     Edit3,
     Layers3,
+    MessageSquare,
     Plus,
     Search,
+    Send,
     Trash2,
 } from 'lucide-react'
 import { categoriesApi } from '../api/categoriesApi'
+import { commentsApi } from '../api/commentsApi'
 import { projectsApi } from '../api/projectsApi'
 import { tasksApi } from '../api/tasksApi'
 import type { Category } from '../types/category'
+import type { Comment } from '../types/comment'
 import type { Project } from '../types/project'
 import type { TaskItem } from '../types/task'
 
@@ -53,6 +57,13 @@ export function ProjectDetailPage() {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+
+    const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null)
+    const [comments, setComments] = useState<Comment[]>([])
+    const [commentContent, setCommentContent] = useState('')
+    const [editingComment, setEditingComment] = useState<Comment | null>(null)
+    const [commentsLoading, setCommentsLoading] = useState(false)
+    const [commentSaving, setCommentSaving] = useState(false)
 
     const filteredTasks = useMemo(() => {
         const normalizedSearch = search.trim().toLowerCase()
@@ -206,6 +217,96 @@ export function ProjectDetailPage() {
             )
         } catch {
             setError('No se pudo actualizar el estado de la tarea.')
+        }
+    }
+
+    const loadComments = async (task: TaskItem) => {
+        try {
+            setSelectedTask(task)
+            setCommentsLoading(true)
+            setError('')
+
+            const data = await commentsApi.getAllByTask(task.id)
+            setComments(data)
+        } catch {
+            setError('No se pudieron cargar los comentarios.')
+        } finally {
+            setCommentsLoading(false)
+        }
+    }
+
+    const resetCommentForm = () => {
+        setCommentContent('')
+        setEditingComment(null)
+    }
+
+    const handleCommentSubmit = async (
+        event: React.FormEvent<HTMLFormElement>,
+    ) => {
+        event.preventDefault()
+
+        if (!selectedTask) {
+            return
+        }
+
+        if (!commentContent.trim()) {
+            setError('El comentario no puede estar vacío.')
+            return
+        }
+
+        try {
+            setCommentSaving(true)
+            setError('')
+
+            if (editingComment) {
+                const updatedComment = await commentsApi.update(editingComment.id, {
+                    content: commentContent.trim(),
+                })
+
+                setComments((currentComments) =>
+                    currentComments.map((comment) =>
+                        comment.id === updatedComment.id ? updatedComment : comment,
+                    ),
+                )
+            } else {
+                const createdComment = await commentsApi.create(selectedTask.id, {
+                    content: commentContent.trim(),
+                })
+
+                setComments((currentComments) => [createdComment, ...currentComments])
+            }
+
+            resetCommentForm()
+        } catch {
+            setError('No se pudo guardar el comentario.')
+        } finally {
+            setCommentSaving(false)
+        }
+    }
+
+    const handleEditComment = (comment: Comment) => {
+        setEditingComment(comment)
+        setCommentContent(comment.content)
+    }
+
+    const handleDeleteComment = async (comment: Comment) => {
+        const confirmed = window.confirm(
+            '¿Seguro que quieres eliminar este comentario?',
+        )
+
+        if (!confirmed) {
+            return
+        }
+
+        try {
+            setError('')
+            await commentsApi.remove(comment.id)
+
+            setComments((currentComments) =>
+                currentComments.filter((item) => item.id !== comment.id),
+            )
+        } catch {
+            setError('No se pudo eliminar el comentario.')
         }
     }
 
@@ -513,6 +614,14 @@ export function ProjectDetailPage() {
 
                                             <div className="flex shrink-0 gap-2">
                                                 <button
+                                                    onClick={() => void loadComments(task)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
+                                                    title="Comentarios"
+                                                >
+                                                    <MessageSquare className="h-4 w-4" />
+                                                </button>
+
+                                                <button
                                                     onClick={() => handleEdit(task)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
                                                     title="Editar"
@@ -536,6 +645,134 @@ export function ProjectDetailPage() {
                     </div>
                 </div>
             </section>
+
+            {selectedTask && (
+                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                        <div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                                    <MessageSquare className="h-6 w-6" />
+                                </div>
+
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-950">
+                                        Comentarios
+                                    </h2>
+                                    <p className="text-sm text-slate-500">
+                                        Tarea seleccionada: {selectedTask.title}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setSelectedTask(null)
+                                setComments([])
+                                resetCommentForm()
+                            }}
+                            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleCommentSubmit} className="mt-6">
+                        <label className="text-sm font-bold text-slate-700">
+                            {editingComment ? 'Editar comentario' : 'Nuevo comentario'}
+                        </label>
+
+                        <textarea
+                            className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                            placeholder="Escribe una nota o comentario sobre esta tarea..."
+                            value={commentContent}
+                            onChange={(event) => setCommentContent(event.target.value)}
+                            maxLength={1000}
+                            required
+                        />
+
+                        <div className="mt-4 flex gap-3">
+                            <button
+                                type="submit"
+                                disabled={commentSaving}
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {commentSaving
+                                    ? 'Guardando...'
+                                    : editingComment
+                                        ? 'Actualizar comentario'
+                                        : 'Añadir comentario'}
+                                <Send className="h-4 w-4" />
+                            </button>
+
+                            {editingComment && (
+                                <button
+                                    type="button"
+                                    onClick={resetCommentForm}
+                                    className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
+                                >
+                                    Cancelar
+                                </button>
+                            )}
+                        </div>
+                    </form>
+
+                    <div className="mt-6 space-y-4">
+                        {commentsLoading ? (
+                            <div className="rounded-3xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-500">
+                                Cargando comentarios...
+                            </div>
+                        ) : comments.length === 0 ? (
+                            <div className="rounded-3xl bg-slate-50 p-8 text-center">
+                                <p className="font-bold text-slate-700">
+                                    Esta tarea todavía no tiene comentarios.
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Añade el primero desde el formulario.
+                                </p>
+                            </div>
+                        ) : (
+                            comments.map((comment) => (
+                                <article
+                                    key={comment.id}
+                                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                                >
+                                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                                        <div>
+                                            <p className="text-sm leading-6 text-slate-700">
+                                                {comment.content}
+                                            </p>
+
+                                            <p className="mt-3 text-xs font-bold text-slate-400">
+                                                {new Date(comment.createdAt).toLocaleString()}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex shrink-0 gap-2">
+                                            <button
+                                                onClick={() => handleEditComment(comment)}
+                                                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
+                                                title="Editar comentario"
+                                            >
+                                                <Edit3 className="h-4 w-4" />
+                                            </button>
+
+                                            <button
+                                                onClick={() => void handleDeleteComment(comment)}
+                                                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
+                                                title="Eliminar comentario"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))
+                        )}
+                    </div>
+                </section>
+            )}
         </div>
     )
 }
