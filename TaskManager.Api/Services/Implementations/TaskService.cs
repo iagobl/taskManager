@@ -136,7 +136,17 @@ public class TaskService : ITaskService
             CreatedAt = task.CreatedAt,
             CompletedAt = task.CompletedAt,
             ProjectId = task.ProjectId,
-            CategoryId = task.CategoryId
+            CategoryId = task.CategoryId,
+            Tags = task.TaskTags
+                .Where(taskTag => taskTag.Tag is not null)
+                .Select(taskTag => new TaskTagDto
+                {
+                    Id = taskTag.Tag.Id,
+                    Name = taskTag.Tag.Name,
+                    Color = taskTag.Tag.Color
+                })
+                .OrderBy(tag => tag.Name)
+                .ToList()
         };
     }
 }

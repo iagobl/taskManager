@@ -21,4 +21,15 @@ public class TaskDto
     public int ProjectId { get; set; }
 
     public int? CategoryId { get; set; }
+
+    public List<TaskTagDto> Tags { get; set; } = new();
+}
+
+public class TaskTagDto
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public string? Color { get; set; }
 }

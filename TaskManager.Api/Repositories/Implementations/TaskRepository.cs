@@ -17,6 +17,8 @@ public class TaskRepository : ITaskRepository
     public async Task<List<TaskItem>> GetAllByProjectIdAsync(int projectId)
     {
         return await _context.Tasks
+            .Include(t => t.TaskTags)
+                .ThenInclude(tt => tt.Tag)
             .Where(t => t.ProjectId == projectId)
             .OrderBy(t => t.IsCompleted)
             .ThenBy(t => t.DueDate)
@@ -28,6 +30,8 @@ public class TaskRepository : ITaskRepository
     {
         return await _context.Tasks
             .Include(t => t.Project)
+            .Include(t => t.TaskTags)
+                .ThenInclude(tt => tt.Tag)
             .FirstOrDefaultAsync(t => t.Id == taskId);
     }
 
