@@ -7,21 +7,25 @@ import {
     Circle,
     Clock3,
     Edit3,
+    Hash,
     Layers3,
     MessageSquare,
     Plus,
     Search,
     Send,
+    Tags,
     Trash2,
 } from 'lucide-react'
 import { categoriesApi } from '../api/categoriesApi'
 import { commentsApi } from '../api/commentsApi'
 import { projectsApi } from '../api/projectsApi'
 import { tasksApi } from '../api/tasksApi'
+import { tagsApi } from '../api/tagsApi'
 import type { Category } from '../types/category'
 import type { Comment } from '../types/comment'
 import type { Project } from '../types/project'
 import type { TaskItem } from '../types/task'
+import type { Tag } from '../types/tag'
 
 const priorities = ['Low', 'Medium', 'High']
 
@@ -45,6 +49,7 @@ export function ProjectDetailPage() {
     const [project, setProject] = useState<Project | null>(null)
     const [tasks, setTasks] = useState<TaskItem[]>([])
     const [categories, setCategories] = useState<Category[]>([])
+    const [tags, setTags] = useState<Tag[]>([])
 
     const [search, setSearch] = useState('')
     const [title, setTitle] = useState('')
@@ -65,6 +70,9 @@ export function ProjectDetailPage() {
     const [commentsLoading, setCommentsLoading] = useState(false)
     const [commentSaving, setCommentSaving] = useState(false)
 
+    const [selectedTagTask, setSelectedTagTask] = useState<TaskItem | null>(null)
+    const [tagSaving, setTagSaving] = useState(false)
+
     const filteredTasks = useMemo(() => {
         const normalizedSearch = search.trim().toLowerCase()
 
@@ -79,7 +87,10 @@ export function ProjectDetailPage() {
                 task.title.toLowerCase().includes(normalizedSearch) ||
                 task.description?.toLowerCase().includes(normalizedSearch) ||
                 task.priority.toLowerCase().includes(normalizedSearch) ||
-                category?.name.toLowerCase().includes(normalizedSearch)
+                category?.name.toLowerCase().includes(normalizedSearch) ||
+                task.tags.some((tag) =>
+                    tag.name.toLowerCase().includes(normalizedSearch),
+                )
             )
         })
     }, [tasks, search, categories])
@@ -95,20 +106,30 @@ export function ProjectDetailPage() {
         return categories.find((category) => category.id === id) ?? null
     }
 
+    const selectedTagIds = useMemo(() => {
+        return new Set(selectedTagTask?.tags.map((tag) => tag.id) ?? [])
+    }, [selectedTagTask])
+
+    const availableTags = useMemo(() => {
+        return tags.filter((tag) => !selectedTagIds.has(tag.id))
+    }, [tags, selectedTagIds])
+
     const loadData = async () => {
         try {
             setLoading(true)
             setError('')
 
-            const [projectData, tasksData, categoriesData] = await Promise.all([
+            const [projectData, tasksData, categoriesData, tagsData] = await Promise.all([
                 projectsApi.getById(projectId),
                 tasksApi.getAllByProject(projectId),
                 categoriesApi.getAll(),
+                tagsApi.getAll(),
             ])
 
             setProject(projectData)
             setTasks(tasksData)
             setCategories(categoriesData)
+            setTags(tagsData)
         } catch {
             setError('No se pudo cargar el proyecto.')
         } finally {
@@ -217,6 +238,61 @@ export function ProjectDetailPage() {
             )
         } catch {
             setError('No se pudo actualizar el estado de la tarea.')
+        }
+    }
+
+    const refreshTask = async (taskId: number) => {
+        const updatedTask = await tasksApi.getById(taskId)
+
+        setTasks((currentTasks) =>
+            currentTasks.map((task) =>
+                task.id === updatedTask.id ? updatedTask : task,
+            ),
+        )
+
+        setSelectedTagTask((currentTask) =>
+            currentTask?.id === updatedTask.id ? updatedTask : currentTask,
+        )
+
+        setSelectedTask((currentTask) =>
+            currentTask?.id === updatedTask.id ? updatedTask : currentTask,
+        )
+    }
+
+    const openTagsPanel = (task: TaskItem) => {
+        setSelectedTagTask(task)
+        setError('')
+    }
+
+    const closeTagsPanel = () => {
+        setSelectedTagTask(null)
+    }
+
+    const handleAddTagToTask = async (taskId: number, tagId: number) => {
+        try {
+            setTagSaving(true)
+            setError('')
+
+            await tagsApi.addToTask(taskId, tagId)
+            await refreshTask(taskId)
+        } catch {
+            setError('No se pudo asociar la etiqueta a la tarea.')
+        } finally {
+            setTagSaving(false)
+        }
+    }
+
+    const handleRemoveTagFromTask = async (taskId: number, tagId: number) => {
+        try {
+            setTagSaving(true)
+            setError('')
+
+            await tagsApi.removeFromTask(taskId, tagId)
+            await refreshTask(taskId)
+        } catch {
+            setError('No se pudo quitar la etiqueta de la tarea.')
+        } finally {
+            setTagSaving(false)
         }
     }
 
@@ -603,6 +679,19 @@ export function ProjectDetailPage() {
                                                         </span>
                                                     )}
 
+                                                    {task.tags.map((tag) => (
+                                                        <span
+                                                            key={tag.id}
+                                                            className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-white"
+                                                            style={{
+                                                                backgroundColor: tag.color ?? '#2563EB',
+                                                            }}
+                                                        >
+                                                            <Hash className="h-4 w-4" />
+                                                            {tag.name}
+                                                        </span>
+                                                    ))}
+
                                                     {task.dueDate && (
                                                         <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-slate-500">
                                                             <CalendarDays className="h-4 w-4" />
@@ -613,6 +702,14 @@ export function ProjectDetailPage() {
                                             </div>
 
                                             <div className="flex shrink-0 gap-2">
+                                                <button
+                                                    onClick={() => openTagsPanel(task)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-pink-50 hover:text-pink-600"
+                                                    title="Etiquetas"
+                                                >
+                                                    <Tags className="h-4 w-4" />
+                                                </button>
+
                                                 <button
                                                     onClick={() => void loadComments(task)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
@@ -645,6 +742,118 @@ export function ProjectDetailPage() {
                     </div>
                 </div>
             </section>
+
+            {selectedTagTask && (
+                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-600">
+                                <Tags className="h-6 w-6" />
+                            </div>
+
+                            <div>
+                                <h2 className="text-xl font-black text-slate-950">
+                                    Etiquetas de la tarea
+                                </h2>
+                                <p className="text-sm text-slate-500">
+                                    Tarea seleccionada: {selectedTagTask.title}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={closeTagsPanel}
+                            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+
+                    <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                        <div className="rounded-3xl bg-slate-50 p-5">
+                            <h3 className="font-black text-slate-950">
+                                Etiquetas asignadas
+                            </h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Quita las etiquetas que ya no correspondan.
+                            </p>
+
+                            <div className="mt-5 flex flex-wrap gap-3">
+                                {selectedTagTask.tags.length === 0 ? (
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Esta tarea todavía no tiene etiquetas.
+                                    </p>
+                                ) : (
+                                    selectedTagTask.tags.map((tag) => (
+                                        <button
+                                            key={tag.id}
+                                            onClick={() =>
+                                                void handleRemoveTagFromTask(
+                                                    selectedTagTask.id,
+                                                    tag.id,
+                                                )
+                                            }
+                                            disabled={tagSaving}
+                                            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
+                                            style={{
+                                                backgroundColor: tag.color ?? '#2563EB',
+                                            }}
+                                            title="Quitar etiqueta"
+                                        >
+                                            <Hash className="h-4 w-4" />
+                                            {tag.name}
+                                            <span className="text-white/70">×</span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl bg-slate-50 p-5">
+                            <h3 className="font-black text-slate-950">
+                                Etiquetas disponibles
+                            </h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Añade etiquetas creadas desde la página de etiquetas.
+                            </p>
+
+                            <div className="mt-5 flex flex-wrap gap-3">
+                                {tags.length === 0 ? (
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        No tienes etiquetas creadas todavía.
+                                    </p>
+                                ) : availableTags.length === 0 ? (
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Todas las etiquetas ya están asignadas a esta tarea.
+                                    </p>
+                                ) : (
+                                    availableTags.map((tag) => (
+                                        <button
+                                            key={tag.id}
+                                            onClick={() =>
+                                                void handleAddTagToTask(
+                                                    selectedTagTask.id,
+                                                    tag.id,
+                                                )
+                                            }
+                                            disabled={tagSaving}
+                                            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
+                                            style={{
+                                                backgroundColor: tag.color ?? '#2563EB',
+                                            }}
+                                            title="Añadir etiqueta"
+                                        >
+                                            <Hash className="h-4 w-4" />
+                                            {tag.name}
+                                            <span className="text-white/70">+</span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {selectedTask && (
                 <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
