@@ -2,7 +2,7 @@
 
 Este documento recoge los endpoints principales del backend de TaskManager.
 
-Los endpoints privados requieren autenticación JWT mediante el botón `Authorize` de Swagger.
+Los endpoints privados requieren autenticación JWT.
 
 ---
 
@@ -20,7 +20,7 @@ Body:
 {
   "fullName": "Iago Becerra",
   "email": "iago@example.com",
-  "password": "123456"
+  "password": "Password123!"
 }
 ```
 
@@ -35,7 +35,7 @@ Body:
 ```json
 {
   "email": "iago@example.com",
-  "password": "123456"
+  "password": "Password123!"
 }
 ```
 
@@ -70,7 +70,7 @@ Respuesta esperada:
 | `PUT` | `/api/Projects/{id}` | Actualizar proyecto |
 | `DELETE` | `/api/Projects/{id}` | Eliminar proyecto |
 
-Ejemplo para crear proyecto:
+Ejemplo:
 
 ```json
 {
@@ -93,7 +93,7 @@ Ejemplo para crear proyecto:
 | `PATCH` | `/api/tasks/{id}/complete` | Marcar tarea como completada |
 | `PATCH` | `/api/tasks/{id}/reopen` | Reabrir tarea |
 
-Ejemplo para crear tarea:
+Ejemplo:
 
 ```json
 {
@@ -102,6 +102,30 @@ Ejemplo para crear tarea:
   "priority": "High",
   "dueDate": "2026-05-25T23:59:00",
   "categoryId": null
+}
+```
+
+Respuesta de tarea con etiquetas:
+
+```json
+{
+  "id": 1,
+  "title": "Preparar entrega",
+  "description": "Revisar documentación",
+  "isCompleted": false,
+  "priority": "High",
+  "dueDate": null,
+  "createdAt": "2026-05-20T10:00:00",
+  "completedAt": null,
+  "projectId": 1,
+  "categoryId": 2,
+  "tags": [
+    {
+      "id": 1,
+      "name": "Importante",
+      "color": "#EF4444"
+    }
+  ]
 }
 ```
 
@@ -117,7 +141,7 @@ Ejemplo para crear tarea:
 | `PUT` | `/api/Categories/{id}` | Actualizar categoría |
 | `DELETE` | `/api/Categories/{id}` | Eliminar categoría |
 
-Ejemplo para crear categoría:
+Ejemplo:
 
 ```json
 {
@@ -140,7 +164,7 @@ Ejemplo para crear categoría:
 | `POST` | `/api/tasks/{taskId}/tags/{tagId}` | Asociar etiqueta a tarea |
 | `DELETE` | `/api/tasks/{taskId}/tags/{tagId}` | Eliminar etiqueta de tarea |
 
-Ejemplo para crear etiqueta:
+Ejemplo:
 
 ```json
 {
@@ -161,7 +185,7 @@ Ejemplo para crear etiqueta:
 | `PUT` | `/api/comments/{id}` | Actualizar comentario |
 | `DELETE` | `/api/comments/{id}` | Eliminar comentario |
 
-Ejemplo para crear comentario:
+Ejemplo:
 
 ```json
 {
@@ -173,17 +197,13 @@ Ejemplo para crear comentario:
 
 ## Errores habituales
 
-### Sin token
-
-Respuesta esperada:
+Sin token:
 
 ```text
 401 Unauthorized
 ```
 
-### Recurso inexistente
-
-Ejemplo:
+Recurso inexistente:
 
 ```json
 {
@@ -192,6 +212,8 @@ Ejemplo:
 }
 ```
 
-### Error de validación
+Error de validación:
 
-ASP.NET Core devuelve automáticamente un `400 Bad Request` cuando los DTOs no cumplen las validaciones.
+```text
+400 Bad Request
+```

@@ -1,18 +1,17 @@
 # Testing guide
 
-Este documento define un flujo recomendado para probar el backend de TaskManager desde Swagger.
+Este documento define un flujo recomendado para probar TaskManager completo.
 
 ---
 
 ## 1. Ejecutar backend
 
-Desde `TaskManager.Api`:
-
 ```bash
+cd TaskManager.Api
 dotnet run
 ```
 
-Abrir Swagger:
+Swagger:
 
 ```text
 http://localhost:5087/swagger
@@ -20,229 +19,147 @@ http://localhost:5087/swagger
 
 ---
 
-## 2. Registrar usuario
+## 2. Ejecutar frontend
 
-Endpoint:
+En otra terminal:
+
+```bash
+cd TaskManager.Client
+npm run dev
+```
+
+Frontend:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 3. Flujo desde el frontend
+
+1. Abrir `/register`.
+2. Crear usuario con contraseña fuerte, por ejemplo:
+
+```text
+Password123!
+```
+
+3. Entrar al dashboard.
+4. Crear un proyecto.
+5. Crear una categoría.
+6. Crear una etiqueta.
+7. Entrar al detalle del proyecto.
+8. Crear una tarea.
+9. Asignar categoría a la tarea.
+10. Asignar etiqueta a la tarea.
+11. Crear comentario en la tarea.
+12. Marcar tarea como completada.
+13. Reabrir tarea.
+14. Revisar dashboard.
+15. Revisar perfil.
+16. Revisar festivos en el dashboard.
+
+---
+
+## 4. Flujo desde Swagger
+
+### Auth
 
 ```text
 POST /api/Auth/register
-```
-
-Body:
-
-```json
-{
-  "fullName": "Iago Becerra",
-  "email": "iago@example.com",
-  "password": "123456"
-}
-```
-
----
-
-## 3. Iniciar sesión
-
-Endpoint:
-
-```text
 POST /api/Auth/login
 ```
 
-Body:
+Copiar token y pulsar `Authorize`.
 
-```json
-{
-  "email": "iago@example.com",
-  "password": "123456"
-}
-```
-
-Copiar el token devuelto.
-
----
-
-## 4. Autorizar Swagger
-
-Pulsar `Authorize` y pegar:
+Formato:
 
 ```text
 Bearer TU_TOKEN
 ```
 
----
-
-## 5. Probar usuario actual
-
-Endpoint:
+### Users
 
 ```text
 GET /api/Users/me
 ```
 
-Debe devolver los datos del usuario autenticado.
-
----
-
-## 6. Crear proyecto
-
-Endpoint:
+### Projects
 
 ```text
 POST /api/Projects
+GET /api/Projects
+GET /api/Projects/{id}
+PUT /api/Projects/{id}
+DELETE /api/Projects/{id}
 ```
 
-Body:
-
-```json
-{
-  "name": "Práctica backend",
-  "description": "Proyecto para organizar las tareas de la práctica"
-}
-```
-
-Guardar el `id` del proyecto creado.
-
----
-
-## 7. Crear categoría
-
-Endpoint:
+### Categories
 
 ```text
 POST /api/Categories
+GET /api/Categories
+PUT /api/Categories/{id}
+DELETE /api/Categories/{id}
 ```
 
-Body:
-
-```json
-{
-  "name": "Universidad",
-  "color": "#2563EB"
-}
-```
-
-Guardar el `id` de la categoría si se quiere usar en tareas.
-
----
-
-## 8. Crear tarea
-
-Endpoint:
-
-```text
-POST /api/projects/{projectId}/tasks
-```
-
-Body:
-
-```json
-{
-  "title": "Implementar CRUD de tareas",
-  "description": "Crear endpoints protegidos para gestionar tareas",
-  "priority": "High",
-  "dueDate": "2026-05-25T23:59:00",
-  "categoryId": null
-}
-```
-
-Guardar el `id` de la tarea creada.
-
----
-
-## 9. Completar y reabrir tarea
-
-Completar:
-
-```text
-PATCH /api/tasks/{id}/complete
-```
-
-Reabrir:
-
-```text
-PATCH /api/tasks/{id}/reopen
-```
-
----
-
-## 10. Crear etiqueta
-
-Endpoint:
+### Tags
 
 ```text
 POST /api/Tags
+GET /api/Tags
+PUT /api/Tags/{id}
+DELETE /api/Tags/{id}
 ```
 
-Body:
+### Tasks
 
-```json
-{
-  "name": "Importante",
-  "color": "#EF4444"
-}
+```text
+POST /api/projects/{projectId}/tasks
+GET /api/projects/{projectId}/tasks
+GET /api/tasks/{id}
+PUT /api/tasks/{id}
+PATCH /api/tasks/{id}/complete
+PATCH /api/tasks/{id}/reopen
+DELETE /api/tasks/{id}
 ```
 
-Guardar el `id` de la etiqueta.
-
----
-
-## 11. Asociar etiqueta a tarea
-
-Endpoint:
+### Task tags
 
 ```text
 POST /api/tasks/{taskId}/tags/{tagId}
-```
-
-Debe devolver `204 No Content`.
-
----
-
-## 12. Eliminar etiqueta de tarea
-
-Endpoint:
-
-```text
 DELETE /api/tasks/{taskId}/tags/{tagId}
 ```
 
-Debe devolver `204 No Content`.
-
----
-
-## 13. Crear comentario
-
-Endpoint:
+### Comments
 
 ```text
 POST /api/tasks/{taskId}/comments
-```
-
-Body:
-
-```json
-{
-  "content": "Revisar esta tarea antes de entregar la práctica."
-}
+GET /api/tasks/{taskId}/comments
+PUT /api/comments/{id}
+DELETE /api/comments/{id}
 ```
 
 ---
 
-## 14. Consultar comentarios
+## 5. Casos de error recomendados
 
-Endpoint:
+### Sin token
+
+Probar una ruta protegida sin token:
 
 ```text
-GET /api/tasks/{taskId}/comments
+GET /api/Projects
 ```
 
-Debe devolver los comentarios de la tarea.
+Resultado esperado:
 
----
+```text
+401 Unauthorized
+```
 
-## 15. Probar errores controlados
-
-### Proyecto inexistente
+### Recurso inexistente
 
 ```text
 GET /api/Projects/999999
@@ -257,26 +174,10 @@ Respuesta esperada:
 }
 ```
 
-### Sin token
-
-Cerrar autorización en Swagger o no enviar token y probar:
-
-```text
-GET /api/Projects
-```
-
-Respuesta esperada:
-
-```text
-401 Unauthorized
-```
-
----
-
-## 16. Prueba de seguridad entre usuarios
+### Usuario sin acceso
 
 1. Crear usuario A.
-2. Crear un proyecto con usuario A.
+2. Crear proyecto con usuario A.
 3. Crear usuario B.
 4. Iniciar sesión con usuario B.
 5. Intentar acceder al proyecto del usuario A.
@@ -290,33 +191,27 @@ Resultado esperado:
 }
 ```
 
-Esto confirma que un usuario no puede acceder a recursos de otro.
+### Registro incorrecto
+
+Probar email repetido o contraseña no válida en frontend.
 
 ---
 
-## 17. Orden de prueba completo
+## 6. Checklist final
 
-Orden recomendado:
-
-```text
-Register
-Login
-Authorize
-GET /api/Users/me
-POST /api/Projects
-GET /api/Projects
-POST /api/Categories
-POST /api/projects/{projectId}/tasks
-GET /api/projects/{projectId}/tasks
-PATCH /api/tasks/{id}/complete
-PATCH /api/tasks/{id}/reopen
-POST /api/Tags
-POST /api/tasks/{taskId}/tags/{tagId}
-DELETE /api/tasks/{taskId}/tags/{tagId}
-POST /api/tasks/{taskId}/comments
-GET /api/tasks/{taskId}/comments
-PUT /api/comments/{id}
-DELETE /api/comments/{id}
-DELETE /api/tasks/{id}
-DELETE /api/Projects/{id}
-```
+- Backend compila.
+- Frontend compila.
+- Swagger abre.
+- React abre.
+- Registro funciona.
+- Login funciona.
+- JWT se guarda.
+- Rutas protegidas funcionan.
+- CRUD de proyectos funciona.
+- CRUD de tareas funciona.
+- Categorías funcionan.
+- Etiquetas funcionan.
+- Etiquetas en tareas funcionan.
+- Comentarios funcionan.
+- Perfil funciona.
+- Festivos externos funcionan.

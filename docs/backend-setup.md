@@ -1,123 +1,69 @@
 # Backend setup
 
-Este documento explica los requisitos, instalación, configuración y ejecución del backend de TaskManager.
+Este documento explica cómo configurar, ejecutar y probar el backend de TaskManager.
 
 ---
 
-## Requisitos previos
+## Tecnologías
 
-Antes de ejecutar el proyecto, es necesario tener instalado:
+- ASP.NET Core Web API.
+- C#.
+- Entity Framework Core.
+- SQL Server / SQL Server LocalDB.
+- JWT Bearer Authentication.
+- BCrypt.
+- Swagger / OpenAPI.
+- Serilog.
+- Middleware global de excepciones.
 
-### Visual Studio 2022 Community
+---
 
-Durante la instalación se recomienda marcar:
+## Requisitos
 
-```text
-Desarrollo de ASP.NET y web
-Almacenamiento y procesamiento de datos
-Desarrollo de Node.js, si se va a crear frontend con React, Angular o Vue
-```
+- .NET SDK.
+- SQL Server LocalDB o SQL Server Express.
+- SQL Server Management Studio.
+- Entity Framework Core Tools.
 
-### .NET SDK
-
-Comprobar instalación:
+Comprobar .NET:
 
 ```bash
 dotnet --version
 ```
 
-### SQL Server LocalDB o SQL Server Express
-
-Para desarrollo local se recomienda usar:
-
-```text
-SQL Server LocalDB
-```
-
-La cadena de conexión usada por defecto es:
-
-```text
-Server=(localdb)\MSSQLLocalDB;Database=TaskManagerDb;Trusted_Connection=True;TrustServerCertificate=True
-```
-
-### SQL Server Management Studio
-
-Se recomienda instalar SSMS para revisar:
-
-- Bases de datos.
-- Tablas.
-- Relaciones.
-- Datos insertados.
-- Migraciones aplicadas.
-
-### Entity Framework Core Tools
-
-Instalar la herramienta global de EF Core:
-
-```bash
-dotnet tool install --global dotnet-ef
-```
-
-Comprobar instalación:
+Comprobar EF Core Tools:
 
 ```bash
 dotnet ef --version
 ```
 
-### Git
-
-Comprobar instalación:
+Instalar EF Core Tools si hace falta:
 
 ```bash
-git --version
+dotnet tool install --global dotnet-ef
 ```
 
 ---
 
-## Instalación del proyecto
+## Restaurar dependencias
 
-Clonar el repositorio:
-
-```bash
-git clone <repository-url>
-cd taskManager
-```
-
-Restaurar dependencias:
+Desde `TaskManager.Api`:
 
 ```bash
 dotnet restore
-```
-
-Entrar en el backend:
-
-```bash
-cd TaskManager.Api
-```
-
-Comprobar que compila:
-
-```bash
-dotnet build
-```
-
-Si todo está correcto, debería aparecer:
-
-```text
-Build succeeded.
 ```
 
 ---
 
 ## Configuración
 
-El archivo principal de configuración está en:
+El archivo principal es:
 
 ```text
 TaskManager.Api/appsettings.json
 ```
 
-Ejemplo de configuración local:
+Ejemplo local:
 
 ```json
 {
@@ -134,140 +80,100 @@ Ejemplo de configuración local:
 }
 ```
 
-## Importante sobre secretos
-
-No se deben subir al repositorio:
-
-- Contraseñas reales.
-- Claves JWT de producción.
-- Tokens privados.
-- Cadenas de conexión de producción.
-- Credenciales personales.
-
-Para producción se deberían usar variables de entorno, .NET user secrets o un gestor de secretos.
+La clave JWT de desarrollo no debe usarse en producción.
 
 ---
 
-## Base de datos
+## CORS
 
-El proyecto usa Entity Framework Core con SQL Server.
+El backend debe permitir peticiones desde el frontend de Vite:
 
-Aplicar migraciones:
+```text
+http://localhost:5173
+```
+
+En `Program.cs` se define una política CORS para el frontend.
+
+---
+
+## Crear base de datos
+
+Desde `TaskManager.Api`:
 
 ```bash
 dotnet ef database update
 ```
 
-Esto crea la base de datos:
+Esto crea o actualiza la base de datos:
 
 ```text
 TaskManagerDb
 ```
 
-y aplica las migraciones existentes.
+---
+
+## Compilar
+
+```bash
+dotnet build
+```
 
 ---
 
-## Ejecución
-
-Desde la carpeta `TaskManager.Api`:
+## Ejecutar
 
 ```bash
 dotnet run
 ```
 
-La API se levantará en una dirección similar a:
+La API suele levantarse en:
 
 ```text
 http://localhost:5087
 ```
 
-El puerto puede variar.
-
 ---
 
 ## Swagger
 
-Una vez ejecutado el backend, abrir:
+Abrir:
 
 ```text
 http://localhost:5087/swagger
 ```
 
-Swagger permite:
+Desde Swagger se puede:
 
-- Ver endpoints.
-- Probar peticiones.
 - Registrar usuarios.
 - Iniciar sesión.
 - Copiar el token JWT.
 - Autorizar peticiones protegidas.
-- Probar el CRUD completo.
-
----
-
-## Autenticación con JWT en Swagger
-
-Primero registrar usuario:
-
-```text
-POST /api/Auth/register
-```
-
-Ejemplo:
-
-```json
-{
-  "fullName": "Iago Becerra",
-  "email": "iago@example.com",
-  "password": "123456"
-}
-```
-
-Después iniciar sesión:
-
-```text
-POST /api/Auth/login
-```
-
-Ejemplo:
-
-```json
-{
-  "email": "iago@example.com",
-  "password": "123456"
-}
-```
-
-La respuesta devuelve un token JWT.
-
-En Swagger:
-
-1. Pulsar `Authorize`.
-2. Pegar el token con el formato:
-
-```text
-Bearer TU_TOKEN
-```
-
-3. Pulsar `Authorize`.
-4. Probar endpoints protegidos.
+- Probar proyectos, tareas, categorías, etiquetas y comentarios.
 
 ---
 
 ## Logs
 
-El proyecto utiliza Serilog.
+El backend usa Serilog.
 
-Los logs aparecen en consola y también se guardan en:
+Los logs se muestran en consola y se guardan en:
 
 ```text
 TaskManager.Api/Logs/
 ```
 
-Esta carpeta debe estar excluida en `.gitignore`:
+Esta carpeta no debe subirse al repositorio.
 
-```gitignore
-# Application logs
-TaskManager.Api/Logs/
+---
+
+## Comandos útiles
+
+```bash
+dotnet restore
+dotnet build
+dotnet run
+dotnet list package
+dotnet ef migrations add NombreMigracion
+dotnet ef database update
+dotnet ef migrations remove
 ```

@@ -1,18 +1,16 @@
 # Database
 
-Este documento describe el modelo de datos, las relaciones principales y el uso de Entity Framework Core en TaskManager.
+Este documento describe el modelo de datos, relaciones y migraciones de TaskManager.
 
 ---
 
 ## Tecnología
 
-La base de datos utiliza:
+- SQL Server / SQL Server LocalDB.
+- Entity Framework Core.
+- Migraciones EF Core.
 
-- SQL Server / SQL Server LocalDB
-- Entity Framework Core
-- Migraciones EF Core
-
-La cadena de conexión local por defecto es:
+Cadena local por defecto:
 
 ```text
 Server=(localdb)\MSSQLLocalDB;Database=TaskManagerDb;Trusted_Connection=True;TrustServerCertificate=True
@@ -21,8 +19,6 @@ Server=(localdb)\MSSQLLocalDB;Database=TaskManagerDb;Trusted_Connection=True;Tru
 ---
 
 ## Entidades principales
-
-El backend trabaja con estas entidades:
 
 - `User`
 - `Project`
@@ -35,8 +31,6 @@ El backend trabaja con estas entidades:
 ---
 
 ## Relaciones
-
-Relaciones principales:
 
 ```text
 User 1:N Project
@@ -52,9 +46,7 @@ TaskItem N:M Tag mediante TaskTag
 
 ---
 
-## Descripción de entidades
-
-### User
+## User
 
 Representa a un usuario registrado.
 
@@ -74,7 +66,7 @@ Relaciones:
 
 ---
 
-### Project
+## Project
 
 Representa un proyecto o grupo de tareas.
 
@@ -93,7 +85,7 @@ Relaciones:
 
 ---
 
-### TaskItem
+## TaskItem
 
 Representa una tarea dentro de un proyecto.
 
@@ -114,12 +106,12 @@ Relaciones:
 
 - Pertenece a un proyecto.
 - Puede pertenecer a una categoría.
-- Puede tener varios comentarios.
-- Puede tener varias etiquetas mediante `TaskTag`.
+- Puede tener comentarios.
+- Puede tener etiquetas mediante `TaskTag`.
 
 ---
 
-### Category
+## Category
 
 Representa una categoría creada por el usuario.
 
@@ -137,7 +129,7 @@ Relaciones:
 
 ---
 
-### Tag
+## Tag
 
 Representa una etiqueta creada por el usuario.
 
@@ -155,9 +147,9 @@ Relaciones:
 
 ---
 
-### TaskTag
+## TaskTag
 
-Tabla intermedia para representar la relación N:M entre tareas y etiquetas.
+Tabla intermedia para representar la relación muchos a muchos entre tareas y etiquetas.
 
 Campos principales:
 
@@ -166,9 +158,9 @@ Campos principales:
 
 ---
 
-### Comment
+## Comment
 
-Representa un comentario o nota dentro de una tarea.
+Representa un comentario dentro de una tarea.
 
 Campos principales:
 
@@ -185,39 +177,20 @@ Relaciones:
 
 ## Migraciones
 
-Las migraciones se encuentran en:
-
-```text
-TaskManager.Api/Migrations/
-```
-
-### Aplicar migraciones
-
-Desde `TaskManager.Api`:
+Aplicar migraciones:
 
 ```bash
+cd TaskManager.Api
 dotnet ef database update
 ```
 
-### Crear una nueva migración
+Crear migración:
 
 ```bash
 dotnet ef migrations add NombreMigracion
 ```
 
-Ejemplo:
-
-```bash
-dotnet ef migrations add AddTaskComments
-```
-
-Después aplicar:
-
-```bash
-dotnet ef database update
-```
-
-### Eliminar última migración no aplicada
+Eliminar última migración no aplicada:
 
 ```bash
 dotnet ef migrations remove
@@ -252,16 +225,12 @@ Comments
 __EFMigrationsHistory
 ```
 
-El nombre exacto de las tablas puede depender del nombre definido en los `DbSet` del `AppDbContext`.
-
 ---
 
 ## Seguridad de datos
 
-Puntos importantes:
-
 - Las contraseñas no se almacenan en texto plano.
 - Solo se guarda `PasswordHash`.
-- Los usuarios no deben acceder a datos de otros usuarios.
-- La lógica de ownership se comprueba desde los servicios.
-- Los DTOs evitan exponer entidades internas directamente.
+- El usuario solo puede acceder a sus propios recursos.
+- La lógica de propiedad se comprueba en servicios.
+- Los DTOs evitan exponer entidades internas completas.

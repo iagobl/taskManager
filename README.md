@@ -2,13 +2,11 @@
 
 TaskManager es una aplicación web de gestión de proyectos y tareas desarrollada como práctica académica.
 
-El objetivo principal del proyecto es implementar un backend completo con **ASP.NET Core Web API**, **Entity Framework Core** y **SQL Server**, aplicando autenticación con JWT, rutas protegidas, DTOs, repositorios, servicios, middleware de errores, logging y documentación del proyecto.
-
-Actualmente el repositorio incluye la parte backend. El frontend se desarrollará posteriormente y consumirá esta API REST.
+El proyecto incluye un **backend REST con ASP.NET Core Web API** y un **frontend con React + Vite + TypeScript**, conectados mediante JWT. La aplicación permite gestionar proyectos, tareas, categorías, etiquetas, comentarios y consultar próximos festivos mediante una API externa consumida desde el frontend.
 
 ---
 
-## Tecnologías utilizadas
+## Tecnologías principales
 
 ### Backend
 
@@ -20,215 +18,194 @@ Actualmente el repositorio incluye la parte backend. El frontend se desarrollar�
 - BCrypt
 - Swagger / OpenAPI
 - Serilog
-- Middleware personalizado de gestión de excepciones
+- Middleware global de excepciones
+- Arquitectura por capas: controllers, DTOs, repositories y services
 
-### Herramientas de desarrollo
+### Frontend
 
-- Visual Studio 2022 Community
-- .NET SDK
-- SQL Server Management Studio
-- Git
-- Entity Framework Core CLI Tools
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+- Axios
+- Lucide React
+- API externa de festivos mediante JavaScript/fetch
 
 ---
 
 ## Funcionalidades principales
 
-El backend incluye:
-
-- Registro e inicio de sesión de usuarios.
-- Hash de contraseñas con BCrypt.
-- Generación y validación de tokens JWT.
-- Rutas protegidas mediante autenticación JWT.
-- Perfil del usuario autenticado.
+- Registro e inicio de sesión.
+- Validación de contraseña segura en el frontend.
+- Autenticación mediante JWT.
+- Rutas protegidas en backend y frontend.
+- Dashboard con datos reales.
 - CRUD de proyectos.
 - CRUD de tareas.
 - Marcar tareas como completadas y reabrirlas.
 - CRUD de categorías.
+- Asignación de categorías a tareas.
 - CRUD de etiquetas.
 - Asociación y eliminación de etiquetas en tareas.
 - CRUD de comentarios en tareas.
-- Validaciones mediante DTOs.
-- Repositorios para acceso a datos.
-- Servicios para lógica de negocio.
-- Inyección de dependencias.
-- Middleware global de gestión de excepciones.
+- Perfil del usuario autenticado.
+- Integración externa de festivos/días no laborables.
+- Swagger para probar la API.
 - Logging con Serilog.
-- Documentación y pruebas mediante Swagger.
+- Middleware de errores en JSON.
 
 ---
 
-## Arquitectura del proyecto
-
-La estructura principal del backend es:
+## Estructura del repositorio
 
 ```text
-TaskManager.Api/
-├── Controllers/
-├── Data/
-├── DTOs/
-├── Middleware/
-├── Models/
-├── Repositories/
-│   ├── Interfaces/
-│   └── Implementations/
-├── Services/
-│   ├── Interfaces/
-│   └── Implementations/
-├── Migrations/
-├── Program.cs
-├── appsettings.json
-└── TaskManager.Api.csproj
+taskManager/
+├── TaskManager.Api/
+│   ├── Controllers/
+│   ├── Data/
+│   ├── DTOs/
+│   ├── Middleware/
+│   ├── Models/
+│   ├── Repositories/
+│   ├── Services/
+│   ├── Migrations/
+│   ├── Program.cs
+│   └── appsettings.json
+│
+├── TaskManager.Client/
+│   ├── src/
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── .env
+│
+├── docs/
+├── README.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CODE_OF_CONDUCT.md
+└── LICENSE
 ```
 
 ---
 
 ## Documentación
 
-La documentación detallada se encuentra en la carpeta `docs/`:
+La documentación detallada está en la carpeta `docs/`.
 
 | Archivo | Contenido |
 | ------- | --------- |
-| [`docs/backend-setup.md`](docs/backend-setup.md) | Requisitos, instalación, configuración y ejecución del backend |
-| [`docs/api-endpoints.md`](docs/api-endpoints.md) | Endpoints principales de la API y ejemplos de uso |
-| [`docs/database.md`](docs/database.md) | Modelo de datos, relaciones, EF Core y migraciones |
-| [`docs/testing-guide.md`](docs/testing-guide.md) | Flujo recomendado de prueba en Swagger |
-| [`docs/backend-status.md`](docs/backend-status.md) | Estado actual del backend y próximos pasos |
-
-Además, el repositorio incluye:
-
-```text
-CONTRIBUTING.md
-SECURITY.md
-CODE_OF_CONDUCT.md
-LICENSE
-```
+| [`docs/project-setup.md`](docs/project-setup.md) | Instalación completa para desarrollar el proyecto |
+| [`docs/backend-setup.md`](docs/backend-setup.md) | Configuración y ejecución del backend |
+| [`docs/frontend-setup.md`](docs/frontend-setup.md) | Configuración y ejecución del frontend |
+| [`docs/api-endpoints.md`](docs/api-endpoints.md) | Endpoints principales de la API |
+| [`docs/database.md`](docs/database.md) | Modelo de datos, relaciones y migraciones |
+| [`docs/testing-guide.md`](docs/testing-guide.md) | Guía completa de pruebas |
+| [`docs/project-status.md`](docs/project-status.md) | Estado final del proyecto |
+| [`docs/packaging.md`](docs/packaging.md) | Opciones de empaquetado, publicación y releases |
 
 ---
 
-## Instalación rápida
+## Instalación rápida para probar el proyecto
 
-Clonar el repositorio:
+### 1. Clonar el repositorio
 
 ```bash
 git clone <repository-url>
 cd taskManager
 ```
 
-Restaurar dependencias:
-
-```bash
-dotnet restore
-```
-
-Entrar en el proyecto backend:
+### 2. Backend
 
 ```bash
 cd TaskManager.Api
-```
-
-Aplicar migraciones:
-
-```bash
+dotnet restore
 dotnet ef database update
-```
-
-Ejecutar el backend:
-
-```bash
 dotnet run
 ```
 
-Abrir Swagger:
+Swagger debería estar disponible en una URL similar a:
 
 ```text
 http://localhost:5087/swagger
 ```
 
-El puerto puede variar según la configuración local.
+### 3. Frontend
 
----
+En otra terminal:
 
-## Configuración básica
+```bash
+cd TaskManager.Client
+npm install
+npm run dev
+```
 
-El archivo principal de configuración es:
+La aplicación web debería estar disponible en:
 
 ```text
-TaskManager.Api/appsettings.json
+http://localhost:5173
 ```
 
-Ejemplo de configuración local:
+El archivo `TaskManager.Client/.env` debe contener:
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=TaskManagerDb;Trusted_Connection=True;TrustServerCertificate=True"
-  },
-  "Jwt": {
-    "Key": "TaskManagerApi_Development_Secret_Key_Change_In_Production_123456789",
-    "Issuer": "TaskManagerApi",
-    "Audience": "TaskManagerClient",
-    "DurationInMinutes": 120
-  },
-  "AllowedHosts": "*"
-}
+```env
+VITE_API_BASE_URL=http://localhost:5087/api
 ```
 
-La clave JWT incluida en `appsettings.json` debe usarse únicamente para desarrollo local.
+Si el backend usa otro puerto, hay que modificar esa URL.
 
 ---
 
-## Comandos útiles
+## Flujo básico de uso
 
-Compilar:
-
-```bash
-dotnet build
-```
-
-Ejecutar:
-
-```bash
-dotnet run
-```
-
-Restaurar paquetes:
-
-```bash
-dotnet restore
-```
-
-Ver paquetes instalados:
-
-```bash
-dotnet list package
-```
-
-Crear migración:
-
-```bash
-dotnet ef migrations add NombreMigracion
-```
-
-Aplicar migraciones:
-
-```bash
-dotnet ef database update
-```
+1. Registrar un usuario.
+2. Iniciar sesión.
+3. Crear un proyecto.
+4. Crear categorías y etiquetas.
+5. Crear tareas dentro de un proyecto.
+6. Asignar categorías y etiquetas a las tareas.
+7. Añadir comentarios.
+8. Completar o reabrir tareas.
+9. Consultar el dashboard y los próximos festivos.
 
 ---
 
 ## Estado actual
 
-Backend funcionalmente finalizado.
+El proyecto está funcionalmente finalizado para la práctica.
 
-Pendiente para fases posteriores:
+Incluye:
 
-- Frontend.
-- Integración de API externa desde JavaScript/frontend.
-- Mejoras visuales.
-- Pruebas automatizadas opcionales.
-- Despliegue opcional.
+```text
+Backend completo
+Frontend completo
+Autenticación JWT
+CRUD principal
+API externa
+Documentación
+Swagger
+SQL Server
+React
+Tailwind
+```
+
+---
+
+## Releases recomendadas
+
+Se pueden usar tags de Git para marcar versiones:
+
+```bash
+git tag -a v0.1.0-backend -m "Backend implementation completed"
+git tag -a v0.2.0-frontend -m "Frontend implementation completed"
+```
+
+Y subirlos con:
+
+```bash
+git push origin v0.1.0-backend
+git push origin v0.2.0-frontend
+```
 
 ---
 
