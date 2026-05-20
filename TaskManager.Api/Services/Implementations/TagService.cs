@@ -100,7 +100,7 @@ public class TagService : ITagService
 
         if (exists)
         {
-            throw new InvalidOperationException("This tag is already assigned to the task.");
+            return;
         }
 
         var taskTag = new TaskTag
@@ -132,7 +132,7 @@ public class TagService : ITagService
 
         if (taskTag is null)
         {
-            throw new KeyNotFoundException("Task tag relation not found.");
+            return;
         }
 
         await _tagRepository.RemoveTagFromTaskAsync(taskTag);

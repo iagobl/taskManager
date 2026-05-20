@@ -17,22 +17,25 @@ public class TaskRepository : ITaskRepository
     public async Task<List<TaskItem>> GetAllByProjectIdAsync(int projectId)
     {
         return await _context.Tasks
-            .Include(t => t.TaskTags)
-                .ThenInclude(tt => tt.Tag)
-            .Where(t => t.ProjectId == projectId)
-            .OrderBy(t => t.IsCompleted)
-            .ThenBy(t => t.DueDate)
-            .ThenByDescending(t => t.CreatedAt)
+            .AsSplitQuery()
+            .Include(task => task.Project)
+            .Include(task => task.TaskTags)
+                .ThenInclude(taskTag => taskTag.Tag)
+            .Where(task => task.ProjectId == projectId)
+            .OrderBy(task => task.IsCompleted)
+            .ThenBy(task => task.DueDate)
+            .ThenByDescending(task => task.CreatedAt)
             .ToListAsync();
     }
 
     public async Task<TaskItem?> GetByIdAsync(int taskId)
     {
         return await _context.Tasks
-            .Include(t => t.Project)
-            .Include(t => t.TaskTags)
-                .ThenInclude(tt => tt.Tag)
-            .FirstOrDefaultAsync(t => t.Id == taskId);
+            .AsSplitQuery()
+            .Include(task => task.Project)
+            .Include(task => task.TaskTags)
+                .ThenInclude(taskTag => taskTag.Tag)
+            .FirstOrDefaultAsync(task => task.Id == taskId);
     }
 
     public async Task<TaskItem> CreateAsync(TaskItem task)
@@ -40,7 +43,7 @@ public class TaskRepository : ITaskRepository
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
 
-        return task;
+        return await GetByIdAsync(task.Id) ?? task;
     }
 
     public async Task UpdateAsync(TaskItem task)

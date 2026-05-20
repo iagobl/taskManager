@@ -77,7 +77,9 @@ public class TaskService : ITaskService
 
         await _taskRepository.UpdateAsync(task);
 
-        return MapToDto(task);
+        var updatedTask = await GetTaskOwnedByUserAsync(taskId, userId);
+
+        return MapToDto(updatedTask);
     }
 
     public async Task DeleteAsync(int taskId, int userId)
@@ -96,7 +98,9 @@ public class TaskService : ITaskService
 
         await _taskRepository.UpdateAsync(task);
 
-        return MapToDto(task);
+        var updatedTask = await GetTaskOwnedByUserAsync(taskId, userId);
+
+        return MapToDto(updatedTask);
     }
 
     public async Task<TaskDto> ReopenAsync(int taskId, int userId)
@@ -108,7 +112,9 @@ public class TaskService : ITaskService
 
         await _taskRepository.UpdateAsync(task);
 
-        return MapToDto(task);
+        var updatedTask = await GetTaskOwnedByUserAsync(taskId, userId);
+
+        return MapToDto(updatedTask);
     }
 
     private async Task<TaskItem> GetTaskOwnedByUserAsync(int taskId, int userId)
@@ -137,7 +143,7 @@ public class TaskService : ITaskService
             CompletedAt = task.CompletedAt,
             ProjectId = task.ProjectId,
             CategoryId = task.CategoryId,
-            Tags = task.TaskTags
+            Tags = task.TaskTags?
                 .Where(taskTag => taskTag.Tag is not null)
                 .Select(taskTag => new TaskTagDto
                 {
@@ -146,7 +152,7 @@ public class TaskService : ITaskService
                     Color = taskTag.Tag.Color
                 })
                 .OrderBy(tag => tag.Name)
-                .ToList()
+                .ToList() ?? new List<TaskTagDto>()
         };
     }
 }

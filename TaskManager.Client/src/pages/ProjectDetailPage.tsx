@@ -141,8 +141,8 @@ export function ProjectDetailPage() {
             setCategories(categoriesData)
             setTags(tagsData)
         } catch {
-            setError('No se pudo cargar el proyecto.')
             setProject(null)
+            setError('No se pudo cargar el proyecto.')
         } finally {
             setLoading(false)
         }
@@ -168,6 +168,8 @@ export function ProjectDetailPage() {
         setSelectedTask((currentTask) =>
             currentTask?.id === refreshedTask.id ? refreshedTask : currentTask,
         )
+
+        return refreshedTask
     }
 
     const resetForm = () => {
@@ -380,12 +382,36 @@ export function ProjectDetailPage() {
         }
     }
 
-    const openTagPanel = (task: TaskItem) => {
-        setSelectedTagTask(normalizeTask(task))
+    const openTagPanel = async (task: TaskItem) => {
+        try {
+            setError('')
+            setTagSaving(true)
+
+            const refreshedTask = await refreshTask(task.id)
+            setSelectedTagTask(refreshedTask)
+        } catch {
+            setError('No se pudieron cargar las etiquetas de la tarea.')
+        } finally {
+            setTagSaving(false)
+        }
+    }
+
+    const closeTagPanel = () => {
+        setSelectedTagTask(null)
     }
 
     const handleAddTagToTask = async (tag: Tag) => {
         if (!selectedTagTask) {
+            return
+        }
+
+        const alreadyAssigned = (selectedTagTask.tags ?? []).some(
+            (currentTag) => currentTag.id === tag.id,
+        )
+
+        if (alreadyAssigned) {
+            setError('')
+            await refreshTask(selectedTagTask.id)
             return
         }
 
@@ -396,7 +422,8 @@ export function ProjectDetailPage() {
             await tagsApi.addToTask(selectedTagTask.id, tag.id)
             await refreshTask(selectedTagTask.id)
         } catch {
-            setError('No se pudo asociar la etiqueta a la tarea.')
+            await refreshTask(selectedTagTask.id)
+            setError('La etiqueta ya estaba asociada o no se pudo actualizar la tarea.')
         } finally {
             setTagSaving(false)
         }
@@ -414,6 +441,7 @@ export function ProjectDetailPage() {
             await tagsApi.removeFromTask(selectedTagTask.id, tag.id)
             await refreshTask(selectedTagTask.id)
         } catch {
+            await refreshTask(selectedTagTask.id)
             setError('No se pudo quitar la etiqueta de la tarea.')
         } finally {
             setTagSaving(false)
@@ -716,7 +744,9 @@ export function ProjectDetailPage() {
                                                         <span
                                                             key={tag.id}
                                                             className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-white"
-                                                            style={{ backgroundColor: tag.color ?? '#2563EB' }}
+                                                            style={{
+                                                                backgroundColor: tag.color ?? '#2563EB',
+                                                            }}
                                                         >
                                                             <Hash className="h-4 w-4" />
                                                             {tag.name}
@@ -726,7 +756,9 @@ export function ProjectDetailPage() {
                                                     {normalizedTask.dueDate && (
                                                         <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-slate-500">
                                                             <CalendarDays className="h-4 w-4" />
-                                                            {new Date(normalizedTask.dueDate).toLocaleDateString()}
+                                                            {new Date(
+                                                                normalizedTask.dueDate,
+                                                            ).toLocaleDateString()}
                                                         </span>
                                                     )}
                                                 </div>
@@ -734,19 +766,19 @@ export function ProjectDetailPage() {
 
                                             <div className="flex shrink-0 gap-2">
                                                 <button
+                                                    onClick={() => void openTagPanel(normalizedTask)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-pink-50 hover:text-pink-600"
+                                                    title="Etiquetas"
+                                                >
+                                                    <Tags className="h-4 w-4" />
+                                                </button>
+
+                                                <button
                                                     onClick={() => void loadComments(normalizedTask)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
                                                     title="Comentarios"
                                                 >
                                                     <MessageSquare className="h-4 w-4" />
-                                                </button>
-
-                                                <button
-                                                    onClick={() => openTagPanel(normalizedTask)}
-                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-pink-50 hover:text-pink-600"
-                                                    title="Etiquetas"
-                                                >
-                                                    <Tags className="h-4 w-4" />
                                                 </button>
 
                                                 <button
@@ -793,7 +825,7 @@ export function ProjectDetailPage() {
                         </div>
 
                         <button
-                            onClick={() => setSelectedTagTask(null)}
+                            onClick={closeTagPanel}
                             className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
                         >
                             Cerrar
@@ -803,25 +835,30 @@ export function ProjectDetailPage() {
                     <div className="mt-6 grid gap-6 lg:grid-cols-2">
                         <div className="rounded-3xl bg-slate-50 p-5">
                             <h3 className="font-black text-slate-950">Asignadas</h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Pulsa una etiqueta para quitarla.
+                            </p>
 
-                            <div className="mt-4 flex flex-wrap gap-3">
+                            <div className="mt-5 flex flex-wrap gap-3">
                                 {(selectedTagTask.tags ?? []).length === 0 ? (
-                                    <p className="text-sm font-medium text-slate-500">
+                                    <p className="text-sm font-semibold text-slate-500">
                                         Esta tarea todavía no tiene etiquetas.
                                     </p>
                                 ) : (
                                     (selectedTagTask.tags ?? []).map((tag) => (
                                         <button
                                             key={tag.id}
-                                            disabled={tagSaving}
                                             onClick={() => void handleRemoveTagFromTask(tag)}
+                                            disabled={tagSaving}
                                             className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
-                                            style={{ backgroundColor: tag.color ?? '#2563EB' }}
+                                            style={{
+                                                backgroundColor: tag.color ?? '#2563EB',
+                                            }}
                                             title="Quitar etiqueta"
                                         >
                                             <Hash className="h-4 w-4" />
                                             {tag.name}
-                                            <span className="text-white/80">×</span>
+                                            <span className="text-white/70">×</span>
                                         </button>
                                     ))
                                 )}
@@ -830,25 +867,34 @@ export function ProjectDetailPage() {
 
                         <div className="rounded-3xl bg-slate-50 p-5">
                             <h3 className="font-black text-slate-950">Disponibles</h3>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Pulsa una etiqueta para añadirla.
+                            </p>
 
-                            <div className="mt-4 flex flex-wrap gap-3">
-                                {availableTags.length === 0 ? (
-                                    <p className="text-sm font-medium text-slate-500">
-                                        No hay más etiquetas disponibles para añadir.
+                            <div className="mt-5 flex flex-wrap gap-3">
+                                {tags.length === 0 ? (
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        No tienes etiquetas creadas todavía.
+                                    </p>
+                                ) : availableTags.length === 0 ? (
+                                    <p className="text-sm font-semibold text-slate-500">
+                                        Todas las etiquetas ya están asignadas a esta tarea.
                                     </p>
                                 ) : (
                                     availableTags.map((tag) => (
                                         <button
                                             key={tag.id}
-                                            disabled={tagSaving}
                                             onClick={() => void handleAddTagToTask(tag)}
+                                            disabled={tagSaving}
                                             className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
-                                            style={{ backgroundColor: tag.color ?? '#2563EB' }}
+                                            style={{
+                                                backgroundColor: tag.color ?? '#2563EB',
+                                            }}
                                             title="Añadir etiqueta"
                                         >
                                             <Hash className="h-4 w-4" />
                                             {tag.name}
-                                            <span className="text-white/80">+</span>
+                                            <span className="text-white/70">+</span>
                                         </button>
                                     ))
                                 )}
