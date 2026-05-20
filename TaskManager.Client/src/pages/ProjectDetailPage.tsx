@@ -7,12 +7,15 @@ import {
     Circle,
     Clock3,
     Edit3,
+    Layers3,
     Plus,
     Search,
     Trash2,
 } from 'lucide-react'
+import { categoriesApi } from '../api/categoriesApi'
 import { projectsApi } from '../api/projectsApi'
 import { tasksApi } from '../api/tasksApi'
+import type { Category } from '../types/category'
 import type { Project } from '../types/project'
 import type { TaskItem } from '../types/task'
 
@@ -37,11 +40,15 @@ export function ProjectDetailPage() {
 
     const [project, setProject] = useState<Project | null>(null)
     const [tasks, setTasks] = useState<TaskItem[]>([])
+    const [categories, setCategories] = useState<Category[]>([])
+
     const [search, setSearch] = useState('')
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('Medium')
     const [dueDate, setDueDate] = useState('')
+    const [categoryId, setCategoryId] = useState<string>('')
+
     const [editingTask, setEditingTask] = useState<TaskItem | null>(null)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
@@ -55,29 +62,42 @@ export function ProjectDetailPage() {
         }
 
         return tasks.filter((task) => {
+            const category = categories.find((item) => item.id === task.categoryId)
+
             return (
                 task.title.toLowerCase().includes(normalizedSearch) ||
                 task.description?.toLowerCase().includes(normalizedSearch) ||
-                task.priority.toLowerCase().includes(normalizedSearch)
+                task.priority.toLowerCase().includes(normalizedSearch) ||
+                category?.name.toLowerCase().includes(normalizedSearch)
             )
         })
-    }, [tasks, search])
+    }, [tasks, search, categories])
 
     const completedTasks = tasks.filter((task) => task.isCompleted).length
     const pendingTasks = tasks.length - completedTasks
+
+    const getCategoryById = (id?: number | null) => {
+        if (!id) {
+            return null
+        }
+
+        return categories.find((category) => category.id === id) ?? null
+    }
 
     const loadData = async () => {
         try {
             setLoading(true)
             setError('')
 
-            const [projectData, tasksData] = await Promise.all([
+            const [projectData, tasksData, categoriesData] = await Promise.all([
                 projectsApi.getById(projectId),
                 tasksApi.getAllByProject(projectId),
+                categoriesApi.getAll(),
             ])
 
             setProject(projectData)
             setTasks(tasksData)
+            setCategories(categoriesData)
         } catch {
             setError('No se pudo cargar el proyecto.')
         } finally {
@@ -96,6 +116,7 @@ export function ProjectDetailPage() {
         setDescription('')
         setPriority('Medium')
         setDueDate('')
+        setCategoryId('')
         setEditingTask(null)
     }
 
@@ -116,7 +137,7 @@ export function ProjectDetailPage() {
                 description: description.trim(),
                 priority,
                 dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-                categoryId: null,
+                categoryId: categoryId ? Number(categoryId) : null,
             }
 
             if (editingTask) {
@@ -146,6 +167,7 @@ export function ProjectDetailPage() {
         setDescription(task.description ?? '')
         setPriority(task.priority)
         setDueDate(task.dueDate ? task.dueDate.slice(0, 10) : '')
+        setCategoryId(task.categoryId ? String(task.categoryId) : '')
     }
 
     const handleDelete = async (task: TaskItem) => {
@@ -265,7 +287,7 @@ export function ProjectDetailPage() {
                                 {editingTask ? 'Editar tarea' : 'Nueva tarea'}
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Define tarea, prioridad y fecha límite.
+                                Define tarea, prioridad, categoría y fecha límite.
                             </p>
                         </div>
                     </div>
@@ -327,6 +349,31 @@ export function ProjectDetailPage() {
                                     onChange={(event) => setDueDate(event.target.value)}
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-bold text-slate-700">
+                                Categoría
+                            </label>
+                            <select
+                                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                value={categoryId}
+                                onChange={(event) => setCategoryId(event.target.value)}
+                            >
+                                <option value="">Sin categoría</option>
+                                {categories.map((category) => (
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {categories.length === 0 && (
+                                <p className="mt-2 text-xs text-slate-500">
+                                    Todavía no tienes categorías. Puedes crearlas desde la página
+                                    de categorías.
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -391,84 +438,100 @@ export function ProjectDetailPage() {
                                 </p>
                             </div>
                         ) : (
-                            filteredTasks.map((task) => (
-                                <article
-                                    key={task.id}
-                                    className={[
-                                        'rounded-3xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
-                                        task.isCompleted
-                                            ? 'border-emerald-200 bg-emerald-50/60'
-                                            : 'border-slate-200 bg-white',
-                                    ].join(' ')}
-                                >
-                                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                        <div className="min-w-0">
-                                            <button
-                                                onClick={() => handleToggleCompleted(task)}
-                                                className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-blue-600"
-                                            >
-                                                {task.isCompleted ? (
-                                                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                                                ) : (
-                                                    <Circle className="h-5 w-5" />
-                                                )}
-                                                {task.isCompleted ? 'Completada' : 'Pendiente'}
-                                            </button>
+                            filteredTasks.map((task) => {
+                                const category = getCategoryById(task.categoryId)
 
-                                            <h3
-                                                className={[
-                                                    'text-lg font-black',
-                                                    task.isCompleted
-                                                        ? 'text-slate-500 line-through'
-                                                        : 'text-slate-950',
-                                                ].join(' ')}
-                                            >
-                                                {task.title}
-                                            </h3>
+                                return (
+                                    <article
+                                        key={task.id}
+                                        className={[
+                                            'rounded-3xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+                                            task.isCompleted
+                                                ? 'border-emerald-200 bg-emerald-50/60'
+                                                : 'border-slate-200 bg-white',
+                                        ].join(' ')}
+                                    >
+                                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                            <div className="min-w-0">
+                                                <button
+                                                    onClick={() => handleToggleCompleted(task)}
+                                                    className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-blue-600"
+                                                >
+                                                    {task.isCompleted ? (
+                                                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                                                    ) : (
+                                                        <Circle className="h-5 w-5" />
+                                                    )}
+                                                    {task.isCompleted ? 'Completada' : 'Pendiente'}
+                                                </button>
 
-                                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
-                                                {task.description || 'Sin descripción'}
-                                            </p>
-
-                                            <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold">
-                                                <span
+                                                <h3
                                                     className={[
-                                                        'rounded-full px-3 py-1',
-                                                        getPriorityStyle(task.priority),
+                                                        'text-lg font-black',
+                                                        task.isCompleted
+                                                            ? 'text-slate-500 line-through'
+                                                            : 'text-slate-950',
                                                     ].join(' ')}
                                                 >
-                                                    {task.priority}
-                                                </span>
+                                                    {task.title}
+                                                </h3>
 
-                                                {task.dueDate && (
-                                                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-slate-500">
-                                                        <CalendarDays className="h-4 w-4" />
-                                                        {new Date(task.dueDate).toLocaleDateString()}
+                                                <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
+                                                    {task.description || 'Sin descripción'}
+                                                </p>
+
+                                                <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold">
+                                                    <span
+                                                        className={[
+                                                            'rounded-full px-3 py-1',
+                                                            getPriorityStyle(task.priority),
+                                                        ].join(' ')}
+                                                    >
+                                                        {task.priority}
                                                     </span>
-                                                )}
+
+                                                    {category && (
+                                                        <span
+                                                            className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-white"
+                                                            style={{
+                                                                backgroundColor: category.color ?? '#2563EB',
+                                                            }}
+                                                        >
+                                                            <Layers3 className="h-4 w-4" />
+                                                            {category.name}
+                                                        </span>
+                                                    )}
+
+                                                    {task.dueDate && (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-slate-500">
+                                                            <CalendarDays className="h-4 w-4" />
+                                                            {new Date(task.dueDate).toLocaleDateString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex shrink-0 gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(task)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
+                                                    title="Editar"
+                                                >
+                                                    <Edit3 className="h-4 w-4" />
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleDelete(task)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </div>
                                         </div>
-
-                                        <div className="flex shrink-0 gap-2">
-                                            <button
-                                                onClick={() => handleEdit(task)}
-                                                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                title="Editar"
-                                            >
-                                                <Edit3 className="h-4 w-4" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => handleDelete(task)}
-                                                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-                                                title="Eliminar"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </article>
-                            ))
+                                    </article>
+                                )
+                            })
                         )}
                     </div>
                 </div>
