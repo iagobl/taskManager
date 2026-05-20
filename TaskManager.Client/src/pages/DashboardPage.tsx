@@ -13,6 +13,7 @@ import { projectsApi } from '../api/projectsApi'
 import { categoriesApi } from '../api/categoriesApi'
 import { tagsApi } from '../api/tagsApi'
 import { tasksApi } from '../api/tasksApi'
+import { HolidaysWidget } from '../components/holidays/HolidaysWidget'
 import type { Project } from '../types/project'
 import type { Category } from '../types/category'
 import type { Tag } from '../types/tag'
@@ -121,26 +122,37 @@ export function DashboardPage() {
                     icon={FolderKanban}
                     color="blue"
                 />
+
                 <StatCard
                     label="Pendientes"
                     value={pendingTasks}
                     icon={Clock3}
                     color="amber"
                 />
+
                 <StatCard
                     label="Completadas"
                     value={completedTasks}
                     icon={CheckCircle2}
                     color="emerald"
                 />
+
                 <StatCard
                     label="Categorías"
                     value={categories.length}
                     icon={Layers3}
                     color="indigo"
                 />
-                <StatCard label="Etiquetas" value={tags.length} icon={Tags} color="pink" />
+
+                <StatCard
+                    label="Etiquetas"
+                    value={tags.length}
+                    icon={Tags}
+                    color="pink"
+                />
             </section>
+
+            <HolidaysWidget />
 
             <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -149,6 +161,7 @@ export function DashboardPage() {
                             <h2 className="text-xl font-black text-slate-950">
                                 Proyectos recientes
                             </h2>
+
                             <p className="mt-1 text-sm text-slate-500">
                                 Últimos espacios de trabajo creados.
                             </p>
@@ -181,6 +194,7 @@ export function DashboardPage() {
                                             <h3 className="font-black text-slate-950">
                                                 {project.name}
                                             </h3>
+
                                             <p className="mt-1 line-clamp-1 text-sm text-slate-500">
                                                 {project.description || 'Sin descripción'}
                                             </p>
@@ -200,6 +214,7 @@ export function DashboardPage() {
                     <h2 className="text-xl font-black text-slate-950">
                         Tareas importantes
                     </h2>
+
                     <p className="mt-1 text-sm text-slate-500">
                         Tareas pendientes con prioridad alta.
                     </p>
@@ -218,7 +233,10 @@ export function DashboardPage() {
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <h3 className="font-black text-slate-950">{task.title}</h3>
+                                            <h3 className="font-black text-slate-950">
+                                                {task.title}
+                                            </h3>
+
                                             <p className="mt-1 line-clamp-2 text-sm text-slate-500">
                                                 {task.description || 'Sin descripción'}
                                             </p>
