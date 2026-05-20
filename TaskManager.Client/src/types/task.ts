@@ -1,3 +1,9 @@
+export interface TaskTag {
+    id: number
+    name: string
+    color?: string | null
+}
+
 export interface TaskItem {
     id: number
     title: string
@@ -9,6 +15,7 @@ export interface TaskItem {
     completedAt?: string | null
     projectId: number
     categoryId?: number | null
+    tags: TaskTag[]
 }
 
 export interface CreateTaskRequest {
