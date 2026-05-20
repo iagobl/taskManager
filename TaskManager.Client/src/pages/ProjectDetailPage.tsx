@@ -52,6 +52,8 @@ export function ProjectDetailPage() {
     const [tags, setTags] = useState<Tag[]>([])
 
     const [search, setSearch] = useState('')
+    const [categoryFilter, setCategoryFilter] = useState<string>('all')
+
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('Medium')
@@ -81,14 +83,11 @@ export function ProjectDetailPage() {
     const filteredTasks = useMemo(() => {
         const normalizedSearch = search.trim().toLowerCase()
 
-        if (!normalizedSearch) {
-            return tasks
-        }
-
         return tasks.filter((task) => {
             const category = categories.find((item) => item.id === task.categoryId)
 
-            return (
+            const matchesSearch =
+                !normalizedSearch ||
                 task.title.toLowerCase().includes(normalizedSearch) ||
                 task.description?.toLowerCase().includes(normalizedSearch) ||
                 task.priority.toLowerCase().includes(normalizedSearch) ||
@@ -96,9 +95,15 @@ export function ProjectDetailPage() {
                 (task.tags ?? []).some((tag) =>
                     tag.name.toLowerCase().includes(normalizedSearch),
                 )
-            )
+
+            const matchesCategory =
+                categoryFilter === 'all' ||
+                (categoryFilter === 'none' && !task.categoryId) ||
+                String(task.categoryId) === categoryFilter
+
+            return matchesSearch && matchesCategory
         })
-    }, [tasks, search, categories])
+    }, [tasks, search, categories, categoryFilter])
 
     const completedTasks = tasks.filter((task) => task.isCompleted).length
     const pendingTasks = tasks.length - completedTasks
@@ -650,14 +655,31 @@ export function ProjectDetailPage() {
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <Search className="h-5 w-5 text-slate-400" />
-                            <input
-                                className="bg-transparent text-sm outline-none placeholder:text-slate-400"
-                                placeholder="Buscar..."
-                                value={search}
-                                onChange={(event) => setSearch(event.target.value)}
-                            />
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                            <select
+                                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                value={categoryFilter}
+                                onChange={(event) => setCategoryFilter(event.target.value)}
+                            >
+                                <option value="all">Todas las categorías</option>
+                                <option value="none">Sin categoría</option>
+
+                                {categories.map((category) => (
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <Search className="h-5 w-5 text-slate-400" />
+                                <input
+                                    className="bg-transparent text-sm outline-none placeholder:text-slate-400"
+                                    placeholder="Buscar..."
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -668,10 +690,10 @@ export function ProjectDetailPage() {
                                     <Clock3 className="h-7 w-7" />
                                 </div>
                                 <p className="mt-4 font-bold text-slate-700">
-                                    No hay tareas todavía.
+                                    No hay tareas para este filtro.
                                 </p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Crea la primera tarea desde el formulario.
+                                    Cambia la categoría seleccionada o crea una nueva tarea.
                                 </p>
                             </div>
                         ) : (
