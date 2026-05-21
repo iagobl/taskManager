@@ -43,7 +43,7 @@ export function TagsPage() {
             const data = await tagsApi.getAll()
             setTags(data)
         } catch {
-            setError('No se pudieron cargar las etiquetas.')
+            setError('Could not load the tags.')
         } finally {
             setLoading(false)
         }
@@ -63,7 +63,7 @@ export function TagsPage() {
         event.preventDefault()
 
         if (!name.trim()) {
-            setError('El nombre de la etiqueta es obligatorio.')
+            setError('The tag name is required.')
             return
         }
 
@@ -93,7 +93,7 @@ export function TagsPage() {
 
             resetForm()
         } catch {
-            setError('No se pudo guardar la etiqueta.')
+            setError('Could not save the tag.')
         } finally {
             setSaving(false)
         }
@@ -107,7 +107,7 @@ export function TagsPage() {
 
     const handleDelete = async (tag: Tag) => {
         const confirmed = window.confirm(
-            `¿Seguro que quieres eliminar la etiqueta "${tag.name}"?`,
+            `Are you sure you want to delete the tag "${tag.name}"?`,
         )
 
         if (!confirmed) {
@@ -122,7 +122,7 @@ export function TagsPage() {
                 currentTags.filter((item) => item.id !== tag.id),
             )
         } catch {
-            setError('No se pudo eliminar la etiqueta.')
+            setError('Could not delete the tag.')
         }
     }
 
@@ -131,21 +131,21 @@ export function TagsPage() {
             <section className="flex flex-col justify-between gap-5 rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-8 text-white shadow-xl shadow-blue-900/20 lg:flex-row lg:items-end">
                 <div>
                     <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
-                        Etiquetas
+                        Tags
                     </p>
                     <h1 className="mt-4 text-4xl font-black tracking-tight">
-                        Marca tus tareas con etiquetas visuales.
+                        Mark your tasks with visual tags.
                     </h1>
                     <p className="mt-3 max-w-2xl leading-7 text-blue-100">
-                        Crea etiquetas para identificar tareas importantes, urgentes,
-                        pendientes de revisión o relacionadas con una parte concreta del
-                        proyecto.
+                        Create tags to identify important, urgent tasks,
+                        pending review or related to a specific part of the
+                        project.
                     </p>
                 </div>
 
                 <div className="rounded-3xl bg-white/10 px-6 py-5 ring-1 ring-white/15 backdrop-blur">
                     <p className="text-3xl font-black">{tags.length}</p>
-                    <p className="text-sm text-blue-100">Etiquetas creadas</p>
+                    <p className="text-sm text-blue-100">Created tags</p>
                 </div>
             </section>
 
@@ -167,10 +167,10 @@ export function TagsPage() {
 
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                {editingTag ? 'Editar etiqueta' : 'Nueva etiqueta'}
+                                {editingTag ? 'Edit tag' : 'Nueva tag'}
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Define nombre y color de identificación.
+                                Define name and identification color.
                             </p>
                         </div>
                     </div>
@@ -178,13 +178,13 @@ export function TagsPage() {
                     <div className="mt-6 space-y-5">
                         <div>
                             <label className="text-sm font-bold text-slate-700">
-                                Nombre
+                                Name
                             </label>
                             <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10">
                                 <Hash className="h-5 w-5 text-slate-400" />
                                 <input
                                     className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
-                                    placeholder="Ej. Importante"
+                                    placeholder="E.g. Important"
                                     value={name}
                                     onChange={(event) => setName(event.target.value)}
                                     maxLength={80}
@@ -238,10 +238,10 @@ export function TagsPage() {
                             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {saving
-                                ? 'Guardando...'
+                                ? 'Saving...'
                                 : editingTag
-                                    ? 'Actualizar'
-                                    : 'Crear etiqueta'}
+                                    ? 'Update'
+                                    : 'Create tag'}
                         </button>
 
                         {editingTag && (
@@ -250,7 +250,7 @@ export function TagsPage() {
                                 onClick={resetForm}
                                 className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
                             >
-                                Cancelar
+                                Cancel
                             </button>
                         )}
                     </div>
@@ -260,10 +260,10 @@ export function TagsPage() {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                Tus etiquetas
+                                Tus tags
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Gestiona las etiquetas que podrás asociar a tus tareas.
+                                Manage the tags you can assign to your tasks.
                             </p>
                         </div>
 
@@ -271,7 +271,7 @@ export function TagsPage() {
                             <Search className="h-5 w-5 text-slate-400" />
                             <input
                                 className="bg-transparent text-sm outline-none placeholder:text-slate-400"
-                                placeholder="Buscar..."
+                                placeholder="Search..."
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                             />
@@ -281,7 +281,7 @@ export function TagsPage() {
                     <div className="mt-6 grid gap-4 md:grid-cols-2">
                         {loading ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-500 md:col-span-2">
-                                Cargando etiquetas...
+                                Loading tags...
                             </div>
                         ) : filteredTags.length === 0 ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center md:col-span-2">
@@ -289,10 +289,10 @@ export function TagsPage() {
                                     <Tags className="h-7 w-7" />
                                 </div>
                                 <p className="mt-4 font-bold text-slate-700">
-                                    No hay etiquetas todavía.
+                                    There are no tags yet.
                                 </p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Crea la primera desde el formulario.
+                                    Create the first one from the form.
                                 </p>
                             </div>
                         ) : (
@@ -314,7 +314,7 @@ export function TagsPage() {
                                             </span>
 
                                             <p className="mt-3 text-sm font-semibold text-slate-500">
-                                                {tag.color ?? 'Sin color'}
+                                                {tag.color ?? 'No color'}
                                             </p>
                                         </div>
 
@@ -322,7 +322,7 @@ export function TagsPage() {
                                             <button
                                                 onClick={() => handleEdit(tag)}
                                                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                title="Editar"
+                                                title="Edit"
                                             >
                                                 <Edit3 className="h-4 w-4" />
                                             </button>
@@ -330,7 +330,7 @@ export function TagsPage() {
                                             <button
                                                 onClick={() => handleDelete(tag)}
                                                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-                                                title="Eliminar"
+                                                title="Delete"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>

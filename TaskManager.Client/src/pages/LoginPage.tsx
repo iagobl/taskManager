@@ -27,7 +27,7 @@ export function LoginPage() {
             await login({ email, password })
             navigate('/dashboard')
         } catch {
-            setError('El email o la contraseña no son correctos.')
+            setError('The email or password is incorrect.')
         } finally {
             setLoading(false)
         }
@@ -50,22 +50,22 @@ export function LoginPage() {
                         </div>
 
                         <h1 className="mt-12 max-w-2xl text-5xl font-black leading-tight tracking-tight xl:text-6xl">
-                            Organiza proyectos, tareas y prioridades desde un único panel.
+                            Organize projects, tasks, and priorities from a single dashboard.
                         </h1>
 
                         <p className="mt-6 max-w-xl text-lg leading-8 text-blue-100">
-                            Una experiencia moderna para gestionar tu trabajo diario con
-                            autenticación segura, datos protegidos y una interfaz clara.
+                            A modern experience to manage your daily work with
+                            secure authentication, protected data, and a clear interface.
                         </p>
 
                         <div className="mt-10 grid max-w-xl grid-cols-2 gap-4">
                             <div className="rounded-3xl bg-white/10 p-5 ring-1 ring-white/15 backdrop-blur">
                                 <p className="text-3xl font-black">JWT</p>
-                                <p className="mt-1 text-sm text-blue-100">Rutas protegidas</p>
+                                <p className="mt-1 text-sm text-blue-100">Protected routes</p>
                             </div>
                             <div className="rounded-3xl bg-white/10 p-5 ring-1 ring-white/15 backdrop-blur">
                                 <p className="text-3xl font-black">CRUD</p>
-                                <p className="mt-1 text-sm text-blue-100">Gestión completa</p>
+                                <p className="mt-1 text-sm text-blue-100">Complete management</p>
                             </div>
                         </div>
                     </div>
@@ -73,15 +73,15 @@ export function LoginPage() {
                     <div className="relative grid gap-4 text-sm text-blue-50">
                         <div className="flex items-center gap-3">
                             <CheckCircle2 className="h-5 w-5 text-cyan-200" />
-                            API protegida con JWT
+                            JWT-protected API
                         </div>
                         <div className="flex items-center gap-3">
                             <CheckCircle2 className="h-5 w-5 text-cyan-200" />
-                            Proyectos, tareas, etiquetas y comentarios
+                            Projects, tasks, tags, and comments
                         </div>
                         <div className="flex items-center gap-3">
                             <CheckCircle2 className="h-5 w-5 text-cyan-200" />
-                            Diseño limpio, moderno y responsive
+                            Clean, modern, responsive design
                         </div>
                     </div>
                 </section>
@@ -97,11 +97,11 @@ export function LoginPage() {
                             </div>
 
                             <h2 className="text-3xl font-black tracking-tight">
-                                Iniciar sesión
+                                Log in
                             </h2>
                             <p className="mt-2 text-sm leading-6 text-slate-300">
-                                Accede a tu espacio de trabajo y continúa gestionando tus
-                                proyectos.
+                                Access your workspace and keep managing your
+                                projects.
                             </p>
                         </div>
 
@@ -131,7 +131,7 @@ export function LoginPage() {
 
                             <div>
                                 <label className="text-sm font-medium text-slate-300">
-                                    Contraseña
+                                    Password
                                 </label>
                                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 transition focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10">
                                     <LockKeyhole className="h-5 w-5 text-slate-400" />
@@ -152,14 +152,14 @@ export function LoginPage() {
                             disabled={loading}
                             className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {loading ? 'Entrando...' : 'Entrar'}
+                            {loading ? 'Logging in...' : 'Log in'}
                             {!loading && <ArrowRight className="h-5 w-5" />}
                         </button>
 
                         <p className="mt-6 text-center text-sm text-slate-300">
-                            ¿No tienes cuenta?{' '}
+                            Don't have an account?{' '}
                             <Link className="font-bold text-blue-300 hover:text-blue-200" to="/register">
-                                Crear cuenta
+                                Create account
                             </Link>
                         </p>
                     </form>

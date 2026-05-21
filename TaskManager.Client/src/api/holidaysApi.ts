@@ -1,4 +1,4 @@
-import type { PublicHoliday } from '../types/holiday'
+import type { PublicHoliday } from '../types/holidays'
 
 const COUNTRY_CODE = 'ES'
 

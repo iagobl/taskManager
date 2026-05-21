@@ -28,23 +28,23 @@ export function RegisterPage() {
 
     const validatePassword = (value: string) => {
         if (value.length < 8) {
-            return 'La contraseña debe tener al menos 8 caracteres.'
+            return 'The password must be at least 8 characters long.'
         }
 
         if (!/[A-Z]/.test(value)) {
-            return 'La contraseña debe incluir al menos una letra mayúscula.'
+            return 'The password must include at least one uppercase letter.'
         }
 
         if (!/[a-z]/.test(value)) {
-            return 'La contraseña debe incluir al menos una letra minúscula.'
+            return 'The password must include at least one lowercase letter.'
         }
 
         if (!/[0-9]/.test(value)) {
-            return 'La contraseña debe incluir al menos un número.'
+            return 'The password must include at least one number.'
         }
 
         if (!/[^A-Za-z0-9]/.test(value)) {
-            return 'La contraseña debe incluir al menos un carácter especial.'
+            return 'The password must include at least one special character.'
         }
 
         return ''
@@ -62,7 +62,7 @@ export function RegisterPage() {
         }
 
         if (password !== confirmPassword) {
-            setError('Las contraseñas no coinciden.')
+            setError('The passwords do not match.')
             return
         }
 
@@ -72,7 +72,7 @@ export function RegisterPage() {
             await register({ fullName, email, password })
             navigate('/dashboard')
         } catch {
-            setError('No se pudo crear la cuenta. Revisa los datos introducidos.')
+            setError('Could not create the account. Check the entered data.')
         } finally {
             setLoading(false)
         }
@@ -96,12 +96,12 @@ export function RegisterPage() {
                             </div>
 
                             <h1 className="mt-12 max-w-2xl text-5xl font-black leading-tight tracking-tight xl:text-6xl">
-                                Crea tu cuenta y empieza a ordenar tu trabajo con claridad.
+                                Create your account and start organizing your work clearly.
                             </h1>
 
                             <p className="mt-6 max-w-xl text-lg leading-8 text-blue-100">
-                                Gestiona proyectos, divide tareas, añade categorías, usa
-                                etiquetas y documenta el avance con comentarios.
+                                Manage projects, split tasks, add categories, use
+                                tags, and document progress with comments.
                             </p>
                         </div>
 
@@ -112,9 +112,9 @@ export function RegisterPage() {
                                         <Layers3 className="h-6 w-6 text-blue-100" />
                                     </div>
                                     <div>
-                                        <p className="font-bold">Organización por proyectos</p>
+                                        <p className="font-bold">Project-based organization</p>
                                         <p className="text-sm text-blue-100">
-                                            Agrupa tareas, prioridades y fechas límite.
+                                            Group tasks, priorities, and deadlines.
                                         </p>
                                     </div>
                                 </div>
@@ -124,7 +124,7 @@ export function RegisterPage() {
                                 <div className="rounded-3xl bg-white/10 p-5 ring-1 ring-white/15 backdrop-blur">
                                     <p className="text-3xl font-black">5+</p>
                                     <p className="mt-1 text-sm text-blue-100">
-                                        Páginas principales
+                                        Main pages
                                     </p>
                                 </div>
                                 <div className="rounded-3xl bg-white/10 p-5 ring-1 ring-white/15 backdrop-blur">
@@ -137,7 +137,7 @@ export function RegisterPage() {
 
                             <div className="flex items-center gap-3 text-sm text-blue-50">
                                 <CheckCircle2 className="h-5 w-5 text-cyan-200" />
-                                Backend conectado con ASP.NET Core y SQL Server
+                                Backend connected with ASP.NET Core and SQL Server
                             </div>
                         </div>
                     </div>
@@ -154,11 +154,11 @@ export function RegisterPage() {
                             </div>
 
                             <h1 className="text-3xl font-black tracking-tight">
-                                Crear cuenta
+                                Create account
                             </h1>
                             <p className="mt-2 text-sm leading-6 text-slate-300">
-                                Crea tu espacio personal para organizar proyectos, tareas,
-                                categorías y etiquetas.
+                                Create your personal space to organize projects, tasks,
+                                categories and tags.
                             </p>
                         </div>
 
@@ -171,7 +171,7 @@ export function RegisterPage() {
                         <div className="space-y-5">
                             <div>
                                 <label className="text-sm font-medium text-slate-300">
-                                    Nombre completo
+                                    Full name
                                 </label>
                                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 transition focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10">
                                     <UserRound className="h-5 w-5 text-slate-400" />
@@ -204,7 +204,7 @@ export function RegisterPage() {
 
                             <div>
                                 <label className="text-sm font-medium text-slate-300">
-                                    Contraseña
+                                    Password
                                 </label>
                                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 transition focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10">
                                     <LockKeyhole className="h-5 w-5 text-slate-400" />
@@ -212,7 +212,7 @@ export function RegisterPage() {
                                         className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
                                         type={showPassword ? 'text' : 'password'}
                                         minLength={8}
-                                        placeholder="Mínimo 8 caracteres"
+                                        placeholder="Minimum 8 characters"
                                         value={password}
                                         onChange={(event) => setPassword(event.target.value)}
                                         required
@@ -222,7 +222,7 @@ export function RegisterPage() {
                                         onClick={() => setShowPassword((value) => !value)}
                                         className="rounded-xl p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"
                                         aria-label={
-                                            showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                                            showPassword ? 'Hide password' : 'Show password'
                                         }
                                     >
                                         {showPassword ? (
@@ -234,14 +234,14 @@ export function RegisterPage() {
                                 </div>
 
                                 <p className="mt-2 text-xs leading-5 text-slate-400">
-                                    Debe tener 8 caracteres, una mayúscula, una minúscula, un
-                                    número y un carácter especial.
+                                    It must have 8 characters, one uppercase letter, one lowercase letter, one
+                                    number, and one special character.
                                 </p>
                             </div>
 
                             <div>
                                 <label className="text-sm font-medium text-slate-300">
-                                    Repetir contraseña
+                                    Repeat password
                                 </label>
                                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 transition focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10">
                                     <LockKeyhole className="h-5 w-5 text-slate-400" />
@@ -249,7 +249,7 @@ export function RegisterPage() {
                                         className="w-full bg-transparent text-white outline-none placeholder:text-slate-500"
                                         type={showConfirmPassword ? 'text' : 'password'}
                                         minLength={8}
-                                        placeholder="Repite tu contraseña"
+                                        placeholder="Repeat your password"
                                         value={confirmPassword}
                                         onChange={(event) => setConfirmPassword(event.target.value)}
                                         required
@@ -260,8 +260,8 @@ export function RegisterPage() {
                                         className="rounded-xl p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"
                                         aria-label={
                                             showConfirmPassword
-                                                ? 'Ocultar contraseña repetida'
-                                                : 'Mostrar contraseña repetida'
+                                                ? 'Hide repeated password'
+                                                : 'Show repeated password'
                                         }
                                     >
                                         {showConfirmPassword ? (
@@ -279,17 +279,17 @@ export function RegisterPage() {
                             disabled={loading}
                             className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+                            {loading ? 'Creating account...' : 'Create account'}
                             {!loading && <ArrowRight className="h-5 w-5" />}
                         </button>
 
                         <p className="mt-6 text-center text-sm text-slate-300">
-                            ¿Ya tienes cuenta?{' '}
+                            Already have an account?{' '}
                             <Link
                                 className="font-bold text-blue-300 hover:text-blue-200"
                                 to="/login"
                             >
-                                Iniciar sesión
+                                Log in
                             </Link>
                         </p>
                     </form>

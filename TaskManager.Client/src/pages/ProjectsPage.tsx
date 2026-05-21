@@ -43,7 +43,7 @@ export function ProjectsPage() {
             const data = await projectsApi.getAll()
             setProjects(data)
         } catch {
-            setError('No se pudieron cargar los proyectos.')
+            setError('Could not load the projects.')
         } finally {
             setLoading(false)
         }
@@ -63,7 +63,7 @@ export function ProjectsPage() {
         event.preventDefault()
 
         if (!name.trim()) {
-            setError('El nombre del proyecto es obligatorio.')
+            setError('The project name is required.')
             return
         }
 
@@ -93,7 +93,7 @@ export function ProjectsPage() {
 
             resetForm()
         } catch {
-            setError('No se pudo guardar el proyecto.')
+            setError('Could not save the project.')
         } finally {
             setSaving(false)
         }
@@ -107,7 +107,7 @@ export function ProjectsPage() {
 
     const handleDelete = async (project: Project) => {
         const confirmed = window.confirm(
-            `¿Seguro que quieres eliminar el proyecto "${project.name}"?`,
+            `Are you sure you want to delete the project "${project.name}"?`,
         )
 
         if (!confirmed) {
@@ -122,7 +122,7 @@ export function ProjectsPage() {
                 currentProjects.filter((item) => item.id !== project.id),
             )
         } catch {
-            setError('No se pudo eliminar el proyecto.')
+            setError('Could not delete the project.')
         }
     }
 
@@ -131,20 +131,20 @@ export function ProjectsPage() {
             <section className="flex flex-col justify-between gap-5 rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-8 text-white shadow-xl shadow-blue-900/20 lg:flex-row lg:items-end">
                 <div>
                     <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
-                        Gestión de proyectos
+                        Project management
                     </p>
                     <h1 className="mt-4 text-4xl font-black tracking-tight">
-                        Organiza tu trabajo por proyectos.
+                        Organize your work by projects.
                     </h1>
                     <p className="mt-3 max-w-2xl leading-7 text-blue-100">
-                        Crea espacios de trabajo, agrupa tareas y controla el avance de cada
-                        proyecto desde una vista clara y protegida.
+                        Create workspaces, group tasks, and track the progress of each
+                        project from a clear and protected view.
                     </p>
                 </div>
 
                 <div className="rounded-3xl bg-white/10 px-6 py-5 ring-1 ring-white/15 backdrop-blur">
                     <p className="text-3xl font-black">{projects.length}</p>
-                    <p className="text-sm text-blue-100">Proyectos creados</p>
+                    <p className="text-sm text-blue-100">Projects creados</p>
                 </div>
             </section>
 
@@ -166,10 +166,10 @@ export function ProjectsPage() {
 
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                {editingProject ? 'Editar proyecto' : 'Nuevo proyecto'}
+                                {editingProject ? 'Edit project' : 'Nuevo project'}
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Define nombre y descripción.
+                                Define name and description.
                             </p>
                         </div>
                     </div>
@@ -177,11 +177,11 @@ export function ProjectsPage() {
                     <div className="mt-6 space-y-5">
                         <div>
                             <label className="text-sm font-bold text-slate-700">
-                                Nombre
+                                Name
                             </label>
                             <input
                                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                placeholder="Ej. Práctica backend"
+                                placeholder="E.g. Backend practice"
                                 value={name}
                                 onChange={(event) => setName(event.target.value)}
                                 maxLength={120}
@@ -191,11 +191,11 @@ export function ProjectsPage() {
 
                         <div>
                             <label className="text-sm font-bold text-slate-700">
-                                Descripción
+                                Description
                             </label>
                             <textarea
                                 className="mt-2 min-h-32 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                placeholder="Describe el objetivo del proyecto..."
+                                placeholder="Describe the project objective..."
                                 value={description}
                                 onChange={(event) => setDescription(event.target.value)}
                                 maxLength={500}
@@ -210,10 +210,10 @@ export function ProjectsPage() {
                             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {saving
-                                ? 'Guardando...'
+                                ? 'Saving...'
                                 : editingProject
-                                    ? 'Actualizar'
-                                    : 'Crear proyecto'}
+                                    ? 'Update'
+                                    : 'Create project'}
                         </button>
 
                         {editingProject && (
@@ -222,7 +222,7 @@ export function ProjectsPage() {
                                 onClick={resetForm}
                                 className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
                             >
-                                Cancelar
+                                Cancel
                             </button>
                         )}
                     </div>
@@ -232,10 +232,10 @@ export function ProjectsPage() {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                Tus proyectos
+                                Tus projects
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Consulta, edita o elimina tus proyectos.
+                                View, edit, or delete your projects.
                             </p>
                         </div>
 
@@ -243,7 +243,7 @@ export function ProjectsPage() {
                             <Search className="h-5 w-5 text-slate-400" />
                             <input
                                 className="bg-transparent text-sm outline-none placeholder:text-slate-400"
-                                placeholder="Buscar..."
+                                placeholder="Search..."
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                             />
@@ -253,7 +253,7 @@ export function ProjectsPage() {
                     <div className="mt-6 space-y-4">
                         {loading ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-500">
-                                Cargando proyectos...
+                                Loading projects...
                             </div>
                         ) : filteredProjects.length === 0 ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center">
@@ -261,10 +261,10 @@ export function ProjectsPage() {
                                     <FolderKanban className="h-7 w-7" />
                                 </div>
                                 <p className="mt-4 font-bold text-slate-700">
-                                    No hay proyectos todavía.
+                                    There are no projects yet.
                                 </p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Crea el primero desde el formulario.
+                                    Create the first one from the form.
                                 </p>
                             </div>
                         ) : (
@@ -279,7 +279,7 @@ export function ProjectsPage() {
                                                 {project.name}
                                             </h3>
                                             <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
-                                                {project.description || 'Sin descripción'}
+                                                {project.description || 'No description'}
                                             </p>
 
                                             <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold text-slate-500">
@@ -288,7 +288,7 @@ export function ProjectsPage() {
                                                     {new Date(project.createdAt).toLocaleDateString()}
                                                 </span>
                                                 <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-600">
-                                                    {project.taskCount} tareas
+                                                    {project.taskCount} tasks
                                                 </span>
                                             </div>
                                         </Link>
@@ -297,7 +297,7 @@ export function ProjectsPage() {
                                             <button
                                                 onClick={() => handleEdit(project)}
                                                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                title="Editar"
+                                                title="Edit"
                                             >
                                                 <Edit3 className="h-4 w-4" />
                                             </button>
@@ -305,7 +305,7 @@ export function ProjectsPage() {
                                             <button
                                                 onClick={() => handleDelete(project)}
                                                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-                                                title="Eliminar"
+                                                title="Delete"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>

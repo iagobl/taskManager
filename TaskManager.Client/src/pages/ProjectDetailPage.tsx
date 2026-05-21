@@ -15,6 +15,7 @@ import {
     Send,
     Tags,
     Trash2,
+    X,
 } from 'lucide-react'
 import { categoriesApi } from '../api/categoriesApi'
 import { commentsApi } from '../api/commentsApi'
@@ -59,6 +60,7 @@ export function ProjectDetailPage() {
     const [priority, setPriority] = useState('Medium')
     const [dueDate, setDueDate] = useState('')
     const [categoryId, setCategoryId] = useState<string>('')
+    const [showTaskForm, setShowTaskForm] = useState(false)
 
     const [editingTask, setEditingTask] = useState<TaskItem | null>(null)
     const [error, setError] = useState('')
@@ -147,7 +149,7 @@ export function ProjectDetailPage() {
             setTags(tagsData)
         } catch {
             setProject(null)
-            setError('No se pudo cargar el proyecto.')
+            setError('Could not load the project.')
         } finally {
             setLoading(false)
         }
@@ -186,11 +188,21 @@ export function ProjectDetailPage() {
         setEditingTask(null)
     }
 
+    const closeTaskForm = () => {
+        resetForm()
+        setShowTaskForm(false)
+    }
+
+    const openNewTaskForm = () => {
+        resetForm()
+        setShowTaskForm(true)
+    }
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         if (!title.trim()) {
-            setError('El título de la tarea es obligatorio.')
+            setError('The task title is required.')
             return
         }
 
@@ -224,9 +236,9 @@ export function ProjectDetailPage() {
                 setTasks((currentTasks) => [createdTask, ...currentTasks])
             }
 
-            resetForm()
+            closeTaskForm()
         } catch {
-            setError('No se pudo guardar la tarea.')
+            setError('Could not save the task.')
         } finally {
             setSaving(false)
         }
@@ -243,11 +255,12 @@ export function ProjectDetailPage() {
         setCategoryId(
             normalizedTask.categoryId ? String(normalizedTask.categoryId) : '',
         )
+        setShowTaskForm(true)
     }
 
     const handleDelete = async (task: TaskItem) => {
         const confirmed = window.confirm(
-            `¿Seguro que quieres eliminar la tarea "${task.title}"?`,
+            `Are you sure you want to delete the task "${task.title}"?`,
         )
 
         if (!confirmed) {
@@ -271,7 +284,7 @@ export function ProjectDetailPage() {
                 setSelectedTagTask(null)
             }
         } catch {
-            setError('No se pudo eliminar la tarea.')
+            setError('Could not delete the task.')
         }
     }
 
@@ -291,7 +304,7 @@ export function ProjectDetailPage() {
                 ),
             )
         } catch {
-            setError('No se pudo actualizar el estado de la tarea.')
+            setError('Could not update the task status.')
         }
     }
 
@@ -306,7 +319,7 @@ export function ProjectDetailPage() {
             setCommentContent('')
             setEditingComment(null)
         } catch {
-            setError('No se pudieron cargar los comentarios.')
+            setError('Could not load the comments.')
         } finally {
             setCommentsLoading(false)
         }
@@ -327,7 +340,7 @@ export function ProjectDetailPage() {
         }
 
         if (!commentContent.trim()) {
-            setError('El comentario no puede estar vacío.')
+            setError('The comment cannot be empty.')
             return
         }
 
@@ -355,7 +368,7 @@ export function ProjectDetailPage() {
 
             resetCommentForm()
         } catch {
-            setError('No se pudo guardar el comentario.')
+            setError('Could not save the comment.')
         } finally {
             setCommentSaving(false)
         }
@@ -368,7 +381,7 @@ export function ProjectDetailPage() {
 
     const handleDeleteComment = async (comment: Comment) => {
         const confirmed = window.confirm(
-            '¿Seguro que quieres eliminar este comentario?',
+            'Are you sure you want to delete this comment?',
         )
 
         if (!confirmed) {
@@ -383,7 +396,7 @@ export function ProjectDetailPage() {
                 currentComments.filter((item) => item.id !== comment.id),
             )
         } catch {
-            setError('No se pudo eliminar el comentario.')
+            setError('Could not delete the comment.')
         }
     }
 
@@ -395,7 +408,7 @@ export function ProjectDetailPage() {
             const refreshedTask = await refreshTask(task.id)
             setSelectedTagTask(refreshedTask)
         } catch {
-            setError('No se pudieron cargar las etiquetas de la tarea.')
+            setError('Could not load the task tags.')
         } finally {
             setTagSaving(false)
         }
@@ -428,7 +441,7 @@ export function ProjectDetailPage() {
             await refreshTask(selectedTagTask.id)
         } catch {
             await refreshTask(selectedTagTask.id)
-            setError('La etiqueta ya estaba asociada o no se pudo actualizar la tarea.')
+            setError('The tag was already assigned or the task could not be updated.')
         } finally {
             setTagSaving(false)
         }
@@ -447,7 +460,7 @@ export function ProjectDetailPage() {
             await refreshTask(selectedTagTask.id)
         } catch {
             await refreshTask(selectedTagTask.id)
-            setError('No se pudo quitar la etiqueta de la tarea.')
+            setError('Could not remove the tag from the task.')
         } finally {
             setTagSaving(false)
         }
@@ -456,7 +469,7 @@ export function ProjectDetailPage() {
     if (loading) {
         return (
             <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center font-semibold text-slate-500 shadow-sm">
-                Cargando proyecto...
+                Loading project...
             </div>
         )
     }
@@ -464,48 +477,56 @@ export function ProjectDetailPage() {
     if (!project) {
         return (
             <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-center font-semibold text-red-700">
-                {error || 'Proyecto no encontrado.'}
+                {error || 'Project not found.'}
             </div>
         )
     }
 
     return (
-        <div className="space-y-8">
-            <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-8 text-white shadow-xl shadow-blue-900/20">
-                <Link
-                    to="/projects"
-                    className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-blue-50 ring-1 ring-white/15 transition hover:bg-white/15"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Volver a proyectos
-                </Link>
-
-                <div className="mt-8 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+        <div className="space-y-6">
+            <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-6 text-white shadow-xl shadow-blue-900/20">
+                <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
                     <div>
-                        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
-                            Detalle de proyecto
+                        <Link
+                            to="/projects"
+                            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-bold text-blue-50 ring-1 ring-white/15 transition hover:bg-white/15"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to projects
+                        </Link>
+
+                        <p className="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-blue-100">
+                            Project details
                         </p>
-                        <h1 className="mt-4 text-4xl font-black tracking-tight">
+                        <h1 className="mt-3 text-3xl font-black tracking-tight">
                             {project.name}
                         </h1>
-                        <p className="mt-3 max-w-2xl leading-7 text-blue-100">
-                            {project.description || 'Proyecto sin descripción.'}
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
+                            {project.description || 'Project without description.'}
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="rounded-3xl bg-white/10 px-5 py-4 text-center ring-1 ring-white/15 backdrop-blur">
-                            <p className="text-2xl font-black">{tasks.length}</p>
-                            <p className="text-xs text-blue-100">Total</p>
+                    <div className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
+                        <div className="rounded-2xl bg-white/10 px-4 py-3 text-center ring-1 ring-white/15 backdrop-blur">
+                            <p className="text-xl font-black">{tasks.length}</p>
+                            <p className="text-[11px] text-blue-100">Total</p>
                         </div>
-                        <div className="rounded-3xl bg-white/10 px-5 py-4 text-center ring-1 ring-white/15 backdrop-blur">
-                            <p className="text-2xl font-black">{pendingTasks}</p>
-                            <p className="text-xs text-blue-100">Pendientes</p>
+                        <div className="rounded-2xl bg-white/10 px-4 py-3 text-center ring-1 ring-white/15 backdrop-blur">
+                            <p className="text-xl font-black">{pendingTasks}</p>
+                            <p className="text-[11px] text-blue-100">Pending</p>
                         </div>
-                        <div className="rounded-3xl bg-white/10 px-5 py-4 text-center ring-1 ring-white/15 backdrop-blur">
-                            <p className="text-2xl font-black">{completedTasks}</p>
-                            <p className="text-xs text-blue-100">Hechas</p>
+                        <div className="rounded-2xl bg-white/10 px-4 py-3 text-center ring-1 ring-white/15 backdrop-blur">
+                            <p className="text-xl font-black">{completedTasks}</p>
+                            <p className="text-[11px] text-blue-100">Done</p>
                         </div>
+                        <button
+                            type="button"
+                            onClick={openNewTaskForm}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-blue-700 shadow-lg shadow-slate-950/20 transition hover:-translate-y-0.5 hover:bg-blue-50"
+                        >
+                            <Plus className="h-4 w-4" />
+                            New task
+                        </button>
                     </div>
                 </div>
             </section>
@@ -516,142 +537,145 @@ export function ProjectDetailPage() {
                 </div>
             )}
 
-            <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-                <form
-                    onSubmit={handleSubmit}
-                    className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                            <Plus className="h-6 w-6" />
-                        </div>
-
-                        <div>
-                            <h2 className="text-xl font-black text-slate-950">
-                                {editingTask ? 'Editar tarea' : 'Nueva tarea'}
-                            </h2>
-                            <p className="text-sm text-slate-500">
-                                Define tarea, prioridad, categoría y fecha límite.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="mt-6 space-y-5">
-                        <div>
-                            <label className="text-sm font-bold text-slate-700">Título</label>
-                            <input
-                                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                placeholder="Ej. Preparar documentación"
-                                value={title}
-                                onChange={(event) => setTitle(event.target.value)}
-                                maxLength={160}
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-bold text-slate-700">
-                                Descripción
-                            </label>
-                            <textarea
-                                className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                placeholder="Añade detalles de la tarea..."
-                                value={description}
-                                onChange={(event) => setDescription(event.target.value)}
-                                maxLength={1000}
-                            />
-                        </div>
-
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label className="text-sm font-bold text-slate-700">
-                                    Prioridad
-                                </label>
-                                <select
-                                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                    value={priority}
-                                    onChange={(event) => setPriority(event.target.value)}
-                                >
-                                    {priorities.map((item) => (
-                                        <option key={item} value={item}>
-                                            {item}
-                                        </option>
-                                    ))}
-                                </select>
+            {showTaskForm && (
+                <section className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm">
+                    <form onSubmit={handleSubmit}>
+                        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                                    <Plus className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-slate-950">
+                                        {editingTask ? 'Edit task' : 'Create a new task'}
+                                    </h2>
+                                    <p className="text-sm text-slate-500">
+                                        Define the task, priority, category, and due date.
+                                    </p>
+                                </div>
                             </div>
 
+                            <button
+                                type="button"
+                                onClick={closeTaskForm}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200"
+                                title="Close form"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="mt-5 grid gap-4 lg:grid-cols-2">
                             <div>
-                                <label className="text-sm font-bold text-slate-700">
-                                    Fecha límite
+                                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Title
                                 </label>
                                 <input
-                                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                    type="date"
-                                    value={dueDate}
-                                    onChange={(event) => setDueDate(event.target.value)}
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                    placeholder="E.g. Prepare documentation"
+                                    value={title}
+                                    onChange={(event) => setTitle(event.target.value)}
+                                    maxLength={160}
+                                    required
+                                />
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <div>
+                                    <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                        Priority
+                                    </label>
+                                    <select
+                                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                        value={priority}
+                                        onChange={(event) => setPriority(event.target.value)}
+                                    >
+                                        {priorities.map((item) => (
+                                            <option key={item} value={item}>
+                                                {item}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                        Due date
+                                    </label>
+                                    <input
+                                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                        type="date"
+                                        value={dueDate}
+                                        onChange={(event) => setDueDate(event.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                        Category
+                                    </label>
+                                    <select
+                                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                        value={categoryId}
+                                        onChange={(event) => setCategoryId(event.target.value)}
+                                    >
+                                        <option value="">No category</option>
+                                        {categories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-2">
+                                <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Description
+                                </label>
+                                <textarea
+                                    className="mt-2 min-h-24 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                    placeholder="Add task details..."
+                                    value={description}
+                                    onChange={(event) => setDescription(event.target.value)}
+                                    maxLength={1000}
                                 />
                             </div>
                         </div>
 
-                        <div>
-                            <label className="text-sm font-bold text-slate-700">
-                                Categoría
-                            </label>
-                            <select
-                                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                value={categoryId}
-                                onChange={(event) => setCategoryId(event.target.value)}
-                            >
-                                <option value="">Sin categoría</option>
-                                {categories.map((category) => (
-                                    <option key={category.id} value={category.id}>
-                                        {category.name}
-                                    </option>
-                                ))}
-                            </select>
-
-                            {categories.length === 0 && (
-                                <p className="mt-2 text-xs text-slate-500">
-                                    Todavía no tienes categorías. Puedes crearlas desde la página
-                                    de categorías.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="mt-6 flex gap-3">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {saving
-                                ? 'Guardando...'
-                                : editingTask
-                                    ? 'Actualizar'
-                                    : 'Crear tarea'}
-                        </button>
-
-                        {editingTask && (
+                        <div className="mt-5 flex justify-end gap-3">
                             <button
                                 type="button"
-                                onClick={resetForm}
-                                className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
+                                onClick={closeTaskForm}
+                                className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
                             >
-                                Cancelar
+                                Cancel
                             </button>
-                        )}
-                    </div>
-                </form>
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {saving
+                                    ? 'Saving...'
+                                    : editingTask
+                                        ? 'Update task'
+                                        : 'Create task'}
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            )}
 
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                Tareas del proyecto
+                                Project tasks
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Gestiona el avance del proyecto.
+                                Manage the project progress from the task list.
                             </p>
                         </div>
 
@@ -661,8 +685,8 @@ export function ProjectDetailPage() {
                                 value={categoryFilter}
                                 onChange={(event) => setCategoryFilter(event.target.value)}
                             >
-                                <option value="all">Todas las categorías</option>
-                                <option value="none">Sin categoría</option>
+                                <option value="all">All categories</option>
+                                <option value="none">No category</option>
 
                                 {categories.map((category) => (
                                     <option key={category.id} value={category.id}>
@@ -675,7 +699,7 @@ export function ProjectDetailPage() {
                                 <Search className="h-5 w-5 text-slate-400" />
                                 <input
                                     className="bg-transparent text-sm outline-none placeholder:text-slate-400"
-                                    placeholder="Buscar..."
+                                    placeholder="Search..."
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
                                 />
@@ -683,17 +707,17 @@ export function ProjectDetailPage() {
                         </div>
                     </div>
 
-                    <div className="mt-6 space-y-4">
+                    <div className="mt-5 max-h-[720px] space-y-4 overflow-y-auto pr-1">
                         {filteredTasks.length === 0 ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center">
                                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
                                     <Clock3 className="h-7 w-7" />
                                 </div>
                                 <p className="mt-4 font-bold text-slate-700">
-                                    No hay tareas para este filtro.
+                                    There are no tasks for this filter.
                                 </p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Cambia la categoría seleccionada o crea una nueva tarea.
+                                    Change the selected category or create a new task.
                                 </p>
                             </div>
                         ) : (
@@ -712,7 +736,7 @@ export function ProjectDetailPage() {
                                         ].join(' ')}
                                     >
                                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 flex-1">
                                                 <button
                                                     onClick={() => handleToggleCompleted(normalizedTask)}
                                                     className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-blue-600"
@@ -722,7 +746,7 @@ export function ProjectDetailPage() {
                                                     ) : (
                                                         <Circle className="h-5 w-5" />
                                                     )}
-                                                    {normalizedTask.isCompleted ? 'Completada' : 'Pendiente'}
+                                                    {normalizedTask.isCompleted ? 'Completed' : 'Pending'}
                                                 </button>
 
                                                 <h3
@@ -737,10 +761,10 @@ export function ProjectDetailPage() {
                                                 </h3>
 
                                                 <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
-                                                    {normalizedTask.description || 'Sin descripción'}
+                                                    {normalizedTask.description || 'No description'}
                                                 </p>
 
-                                                <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold">
+                                                <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
                                                     <span
                                                         className={[
                                                             'rounded-full px-3 py-1',
@@ -778,9 +802,7 @@ export function ProjectDetailPage() {
                                                     {normalizedTask.dueDate && (
                                                         <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-slate-500">
                                                             <CalendarDays className="h-4 w-4" />
-                                                            {new Date(
-                                                                normalizedTask.dueDate,
-                                                            ).toLocaleDateString()}
+                                                            {new Date(normalizedTask.dueDate).toLocaleDateString()}
                                                         </span>
                                                     )}
                                                 </div>
@@ -790,7 +812,7 @@ export function ProjectDetailPage() {
                                                 <button
                                                     onClick={() => void openTagPanel(normalizedTask)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-pink-50 hover:text-pink-600"
-                                                    title="Etiquetas"
+                                                    title="Manage tags"
                                                 >
                                                     <Tags className="h-4 w-4" />
                                                 </button>
@@ -798,7 +820,7 @@ export function ProjectDetailPage() {
                                                 <button
                                                     onClick={() => void loadComments(normalizedTask)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-600"
-                                                    title="Comentarios"
+                                                    title="Comments"
                                                 >
                                                     <MessageSquare className="h-4 w-4" />
                                                 </button>
@@ -806,7 +828,7 @@ export function ProjectDetailPage() {
                                                 <button
                                                     onClick={() => handleEdit(normalizedTask)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                    title="Editar"
+                                                    title="Edit task"
                                                 >
                                                     <Edit3 className="h-4 w-4" />
                                                 </button>
@@ -814,7 +836,7 @@ export function ProjectDetailPage() {
                                                 <button
                                                     onClick={() => void handleDelete(normalizedTask)}
                                                     className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-                                                    title="Eliminar"
+                                                    title="Delete task"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
@@ -826,231 +848,249 @@ export function ProjectDetailPage() {
                         )}
                     </div>
                 </div>
-            </section>
 
-            {selectedTagTask && (
-                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-600">
-                                <Tags className="h-6 w-6" />
-                            </div>
-
-                            <div>
-                                <h2 className="text-xl font-black text-slate-950">
-                                    Etiquetas de la tarea
-                                </h2>
-                                <p className="text-sm text-slate-500">
-                                    Tarea seleccionada: {selectedTagTask.title}
-                                </p>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={closeTagPanel}
-                            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
-                        >
-                            Cerrar
-                        </button>
-                    </div>
-
-                    <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                        <div className="rounded-3xl bg-slate-50 p-5">
-                            <h3 className="font-black text-slate-950">Asignadas</h3>
-                            <p className="mt-1 text-sm text-slate-500">
-                                Pulsa una etiqueta para quitarla.
-                            </p>
-
-                            <div className="mt-5 flex flex-wrap gap-3">
-                                {(selectedTagTask.tags ?? []).length === 0 ? (
-                                    <p className="text-sm font-semibold text-slate-500">
-                                        Esta tarea todavía no tiene etiquetas.
+                <aside className="space-y-5">
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600">
+                                    <Tags className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-slate-950">
+                                        Task tags
+                                    </h2>
+                                    <p className="text-sm text-slate-500">
+                                        {selectedTagTask
+                                            ? `Selected task: ${selectedTagTask.title}`
+                                            : 'Select a task tag icon to manage tags.'}
                                     </p>
-                                ) : (
-                                    (selectedTagTask.tags ?? []).map((tag) => (
-                                        <button
-                                            key={tag.id}
-                                            onClick={() => void handleRemoveTagFromTask(tag)}
-                                            disabled={tagSaving}
-                                            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
-                                            style={{
-                                                backgroundColor: tag.color ?? '#2563EB',
-                                            }}
-                                            title="Quitar etiqueta"
-                                        >
-                                            <Hash className="h-4 w-4" />
-                                            {tag.name}
-                                            <span className="text-white/70">×</span>
-                                        </button>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="rounded-3xl bg-slate-50 p-5">
-                            <h3 className="font-black text-slate-950">Disponibles</h3>
-                            <p className="mt-1 text-sm text-slate-500">
-                                Pulsa una etiqueta para añadirla.
-                            </p>
-
-                            <div className="mt-5 flex flex-wrap gap-3">
-                                {tags.length === 0 ? (
-                                    <p className="text-sm font-semibold text-slate-500">
-                                        No tienes etiquetas creadas todavía.
-                                    </p>
-                                ) : availableTags.length === 0 ? (
-                                    <p className="text-sm font-semibold text-slate-500">
-                                        Todas las etiquetas ya están asignadas a esta tarea.
-                                    </p>
-                                ) : (
-                                    availableTags.map((tag) => (
-                                        <button
-                                            key={tag.id}
-                                            onClick={() => void handleAddTagToTask(tag)}
-                                            disabled={tagSaving}
-                                            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
-                                            style={{
-                                                backgroundColor: tag.color ?? '#2563EB',
-                                            }}
-                                            title="Añadir etiqueta"
-                                        >
-                                            <Hash className="h-4 w-4" />
-                                            {tag.name}
-                                            <span className="text-white/70">+</span>
-                                        </button>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {selectedTask && (
-                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                                <MessageSquare className="h-6 w-6" />
+                                </div>
                             </div>
 
-                            <div>
-                                <h2 className="text-xl font-black text-slate-950">
-                                    Comentarios
-                                </h2>
-                                <p className="text-sm text-slate-500">
-                                    Tarea seleccionada: {selectedTask.title}
-                                </p>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => {
-                                setSelectedTask(null)
-                                setComments([])
-                                resetCommentForm()
-                            }}
-                            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
-                        >
-                            Cerrar
-                        </button>
-                    </div>
-
-                    <form onSubmit={handleCommentSubmit} className="mt-6">
-                        <label className="text-sm font-bold text-slate-700">
-                            {editingComment ? 'Editar comentario' : 'Nuevo comentario'}
-                        </label>
-
-                        <textarea
-                            className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                            placeholder="Escribe una nota o comentario sobre esta tarea..."
-                            value={commentContent}
-                            onChange={(event) => setCommentContent(event.target.value)}
-                            maxLength={1000}
-                            required
-                        />
-
-                        <div className="mt-4 flex gap-3">
-                            <button
-                                type="submit"
-                                disabled={commentSaving}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                {commentSaving
-                                    ? 'Guardando...'
-                                    : editingComment
-                                        ? 'Actualizar comentario'
-                                        : 'Añadir comentario'}
-                                <Send className="h-4 w-4" />
-                            </button>
-
-                            {editingComment && (
+                            {selectedTagTask && (
                                 <button
-                                    type="button"
-                                    onClick={resetCommentForm}
-                                    className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
+                                    onClick={closeTagPanel}
+                                    className="rounded-2xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
                                 >
-                                    Cancelar
+                                    Close
                                 </button>
                             )}
                         </div>
-                    </form>
 
-                    <div className="mt-6 space-y-4">
-                        {commentsLoading ? (
-                            <div className="rounded-3xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-500">
-                                Cargando comentarios...
-                            </div>
-                        ) : comments.length === 0 ? (
-                            <div className="rounded-3xl bg-slate-50 p-8 text-center">
-                                <p className="font-bold text-slate-700">
-                                    Esta tarea todavía no tiene comentarios.
-                                </p>
-                                <p className="mt-1 text-sm text-slate-500">
-                                    Añade el primero desde el formulario.
-                                </p>
+                        {!selectedTagTask ? (
+                            <div className="mt-5 rounded-3xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">
+                                Tags for the selected task will appear here.
                             </div>
                         ) : (
-                            comments.map((comment) => (
-                                <article
-                                    key={comment.id}
-                                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
-                                >
-                                    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                                        <div>
-                                            <p className="text-sm leading-6 text-slate-700">
-                                                {comment.content}
+                            <div className="mt-5 space-y-4">
+                                <div className="rounded-3xl bg-slate-50 p-4">
+                                    <h3 className="font-black text-slate-950">Assigned</h3>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Click a tag to remove it.
+                                    </p>
+
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {(selectedTagTask.tags ?? []).length === 0 ? (
+                                            <p className="text-sm font-semibold text-slate-500">
+                                                This task has no tags yet.
                                             </p>
-
-                                            <p className="mt-3 text-xs font-bold text-slate-400">
-                                                {new Date(comment.createdAt).toLocaleString()}
-                                            </p>
-                                        </div>
-
-                                        <div className="flex shrink-0 gap-2">
-                                            <button
-                                                onClick={() => handleEditComment(comment)}
-                                                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                title="Editar comentario"
-                                            >
-                                                <Edit3 className="h-4 w-4" />
-                                            </button>
-
-                                            <button
-                                                onClick={() => void handleDeleteComment(comment)}
-                                                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-                                                title="Eliminar comentario"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
+                                        ) : (
+                                            (selectedTagTask.tags ?? []).map((tag) => (
+                                                <button
+                                                    key={tag.id}
+                                                    onClick={() => void handleRemoveTagFromTask(tag)}
+                                                    disabled={tagSaving}
+                                                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    style={{
+                                                        backgroundColor: tag.color ?? '#2563EB',
+                                                    }}
+                                                    title="Remove tag"
+                                                >
+                                                    <Hash className="h-4 w-4" />
+                                                    {tag.name}
+                                                    <span className="text-white/70">×</span>
+                                                </button>
+                                            ))
+                                        )}
                                     </div>
-                                </article>
-                            ))
+                                </div>
+
+                                <div className="rounded-3xl bg-slate-50 p-4">
+                                    <h3 className="font-black text-slate-950">Available</h3>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Click a tag to add it.
+                                    </p>
+
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {tags.length === 0 ? (
+                                            <p className="text-sm font-semibold text-slate-500">
+                                                You do not have any tags created yet.
+                                            </p>
+                                        ) : availableTags.length === 0 ? (
+                                            <p className="text-sm font-semibold text-slate-500">
+                                                All tags are already assigned to this task.
+                                            </p>
+                                        ) : (
+                                            availableTags.map((tag) => (
+                                                <button
+                                                    key={tag.id}
+                                                    onClick={() => void handleAddTagToTask(tag)}
+                                                    disabled={tagSaving}
+                                                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-sm transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    style={{
+                                                        backgroundColor: tag.color ?? '#2563EB',
+                                                    }}
+                                                    title="Add tag"
+                                                >
+                                                    <Hash className="h-4 w-4" />
+                                                    {tag.name}
+                                                    <span className="text-white/70">+</span>
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         )}
-                    </div>
-                </section>
-            )}
+                    </section>
+
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                                    <MessageSquare className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-slate-950">
+                                        Comments
+                                    </h2>
+                                    <p className="text-sm text-slate-500">
+                                        {selectedTask
+                                            ? `Selected task: ${selectedTask.title}`
+                                            : 'Select a task comment icon to read or add comments.'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {selectedTask && (
+                                <button
+                                    onClick={() => {
+                                        setSelectedTask(null)
+                                        setComments([])
+                                        resetCommentForm()
+                                    }}
+                                    className="rounded-2xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
+                                >
+                                    Close
+                                </button>
+                            )}
+                        </div>
+
+                        {!selectedTask ? (
+                            <div className="mt-5 rounded-3xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">
+                                Comments for the selected task will appear here.
+                            </div>
+                        ) : (
+                            <>
+                                <form onSubmit={handleCommentSubmit} className="mt-5">
+                                    <label className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                                        {editingComment ? 'Edit comment' : 'New comment'}
+                                    </label>
+
+                                    <textarea
+                                        className="mt-2 min-h-24 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
+                                        placeholder="Write a note about this task..."
+                                        value={commentContent}
+                                        onChange={(event) => setCommentContent(event.target.value)}
+                                        maxLength={1000}
+                                        required
+                                    />
+
+                                    <div className="mt-3 flex flex-wrap gap-3">
+                                        <button
+                                            type="submit"
+                                            disabled={commentSaving}
+                                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {commentSaving
+                                                ? 'Saving...'
+                                                : editingComment
+                                                    ? 'Update comment'
+                                                    : 'Add comment'}
+                                            <Send className="h-4 w-4" />
+                                        </button>
+
+                                        {editingComment && (
+                                            <button
+                                                type="button"
+                                                onClick={resetCommentForm}
+                                                className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                                            >
+                                                Cancel
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+
+                                <div className="mt-5 max-h-[360px] space-y-3 overflow-y-auto pr-1">
+                                    {commentsLoading ? (
+                                        <div className="rounded-3xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">
+                                            Loading comments...
+                                        </div>
+                                    ) : comments.length === 0 ? (
+                                        <div className="rounded-3xl bg-slate-50 p-6 text-center">
+                                            <p className="font-bold text-slate-700">
+                                                This task does not have any comments yet.
+                                            </p>
+                                            <p className="mt-1 text-sm text-slate-500">
+                                                Add the first one from the form.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        comments.map((comment) => (
+                                            <article
+                                                key={comment.id}
+                                                className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
+                                            >
+                                                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                                                    <div>
+                                                        <p className="text-sm leading-6 text-slate-700">
+                                                            {comment.content}
+                                                        </p>
+
+                                                        <p className="mt-3 text-xs font-bold text-slate-400">
+                                                            {new Date(comment.createdAt).toLocaleString()}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="flex shrink-0 gap-2">
+                                                        <button
+                                                            onClick={() => handleEditComment(comment)}
+                                                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
+                                                            title="Edit comment"
+                                                        >
+                                                            <Edit3 className="h-4 w-4" />
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => void handleDeleteComment(comment)}
+                                                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
+                                                            title="Delete comment"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        ))
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </section>
+                </aside>
+            </section>
         </div>
     )
 }

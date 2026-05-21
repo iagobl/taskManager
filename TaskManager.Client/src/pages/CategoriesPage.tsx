@@ -50,7 +50,7 @@ export function CategoriesPage() {
             const data = await categoriesApi.getAll()
             setCategories(data)
         } catch {
-            setError('No se pudieron cargar las categorías.')
+            setError('Could not load the categories.')
         } finally {
             setLoading(false)
         }
@@ -70,7 +70,7 @@ export function CategoriesPage() {
         event.preventDefault()
 
         if (!name.trim()) {
-            setError('El nombre de la categoría es obligatorio.')
+            setError('The category name is required.')
             return
         }
 
@@ -103,7 +103,7 @@ export function CategoriesPage() {
 
             resetForm()
         } catch {
-            setError('No se pudo guardar la categoría.')
+            setError('Could not save the category.')
         } finally {
             setSaving(false)
         }
@@ -117,7 +117,7 @@ export function CategoriesPage() {
 
     const handleDelete = async (category: Category) => {
         const confirmed = window.confirm(
-            `¿Seguro que quieres eliminar la categoría "${category.name}"?`,
+            `Are you sure you want to delete the category "${category.name}"?`,
         )
 
         if (!confirmed) {
@@ -132,7 +132,7 @@ export function CategoriesPage() {
                 currentCategories.filter((item) => item.id !== category.id),
             )
         } catch {
-            setError('No se pudo eliminar la categoría.')
+            setError('Could not delete the category.')
         }
     }
 
@@ -141,20 +141,20 @@ export function CategoriesPage() {
             <section className="flex flex-col justify-between gap-5 rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-8 text-white shadow-xl shadow-blue-900/20 lg:flex-row lg:items-end">
                 <div>
                     <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
-                        Categorías
+                        Categories
                     </p>
                     <h1 className="mt-4 text-4xl font-black tracking-tight">
-                        Clasifica tus tareas por contexto.
+                        Classify your tasks by context.
                     </h1>
                     <p className="mt-3 max-w-2xl leading-7 text-blue-100">
-                        Crea categorías visuales para diferenciar tareas de universidad,
-                        trabajo, proyectos personales o cualquier área de actividad.
+                        Create visual categories to separate university tasks,
+                        work, personal projects, or any activity area.
                     </p>
                 </div>
 
                 <div className="rounded-3xl bg-white/10 px-6 py-5 ring-1 ring-white/15 backdrop-blur">
                     <p className="text-3xl font-black">{categories.length}</p>
-                    <p className="text-sm text-blue-100">Categorías creadas</p>
+                    <p className="text-sm text-blue-100">Created categories</p>
                 </div>
             </section>
 
@@ -176,10 +176,10 @@ export function CategoriesPage() {
 
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                {editingCategory ? 'Editar categoría' : 'Nueva categoría'}
+                                {editingCategory ? 'Edit category' : 'New category'}
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Define un nombre y un color identificativo.
+                                Define a name and identifying color.
                             </p>
                         </div>
                     </div>
@@ -187,11 +187,11 @@ export function CategoriesPage() {
                     <div className="mt-6 space-y-5">
                         <div>
                             <label className="text-sm font-bold text-slate-700">
-                                Nombre
+                                Name
                             </label>
                             <input
                                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
-                                placeholder="Ej. Universidad"
+                                placeholder="E.g. University"
                                 value={name}
                                 onChange={(event) => setName(event.target.value)}
                                 maxLength={80}
@@ -244,10 +244,10 @@ export function CategoriesPage() {
                             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {saving
-                                ? 'Guardando...'
+                                ? 'Saving...'
                                 : editingCategory
-                                    ? 'Actualizar'
-                                    : 'Crear categoría'}
+                                    ? 'Update'
+                                    : 'Create category'}
                         </button>
 
                         {editingCategory && (
@@ -256,7 +256,7 @@ export function CategoriesPage() {
                                 onClick={resetForm}
                                 className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-50"
                             >
-                                Cancelar
+                                Cancel
                             </button>
                         )}
                     </div>
@@ -266,10 +266,10 @@ export function CategoriesPage() {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h2 className="text-xl font-black text-slate-950">
-                                Tus categorías
+                                Your categories
                             </h2>
                             <p className="text-sm text-slate-500">
-                                Gestiona las categorías disponibles para tus tareas.
+                                Manage the categories available for your tasks.
                             </p>
                         </div>
 
@@ -277,7 +277,7 @@ export function CategoriesPage() {
                             <Search className="h-5 w-5 text-slate-400" />
                             <input
                                 className="bg-transparent text-sm outline-none placeholder:text-slate-400"
-                                placeholder="Buscar..."
+                                placeholder="Search..."
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                             />
@@ -287,7 +287,7 @@ export function CategoriesPage() {
                     <div className="mt-6 grid gap-4 md:grid-cols-2">
                         {loading ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-500 md:col-span-2">
-                                Cargando categorías...
+                                Loading categories...
                             </div>
                         ) : filteredCategories.length === 0 ? (
                             <div className="rounded-3xl bg-slate-50 p-8 text-center md:col-span-2">
@@ -295,10 +295,10 @@ export function CategoriesPage() {
                                     <Layers3 className="h-7 w-7" />
                                 </div>
                                 <p className="mt-4 font-bold text-slate-700">
-                                    No hay categorías todavía.
+                                    There are no categories yet.
                                 </p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    Crea la primera desde el formulario.
+                                    Create the first one from the form.
                                 </p>
                             </div>
                         ) : (
@@ -321,7 +321,7 @@ export function CategoriesPage() {
                                                     {category.name}
                                                 </h3>
                                                 <p className="text-sm font-semibold text-slate-500">
-                                                    {category.color ?? 'Sin color'}
+                                                    {category.color ?? 'No color'}
                                                 </p>
                                             </div>
                                         </div>
@@ -330,7 +330,7 @@ export function CategoriesPage() {
                                             <button
                                                 onClick={() => handleEdit(category)}
                                                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-blue-50 hover:text-blue-600"
-                                                title="Editar"
+                                                title="Edit"
                                             >
                                                 <Edit3 className="h-4 w-4" />
                                             </button>
@@ -338,7 +338,7 @@ export function CategoriesPage() {
                                             <button
                                                 onClick={() => handleDelete(category)}
                                                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-600"
-                                                title="Eliminar"
+                                                title="Delete"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>

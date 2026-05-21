@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
     CheckCircle2,
     Clock3,
@@ -8,6 +9,7 @@ import {
     ArrowRight,
     Sparkles,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { projectsApi } from '../api/projectsApi'
 import { categoriesApi } from '../api/categoriesApi'
@@ -37,12 +39,40 @@ export function DashboardPage() {
     const completionRate =
         tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100)
 
-    const recentProjects = projects.slice(0, 3)
+    const recentProjects = projects.slice(0, 4)
 
     const urgentTasks = tasks
         .filter((task) => !task.isCompleted)
         .filter((task) => task.priority.toLowerCase() === 'high')
-        .slice(0, 4)
+        .slice(0, 5)
+
+    const dashboardStats: DashboardStat[] = [
+        {
+            label: 'Projects',
+            value: projects.length,
+            icon: FolderKanban,
+        },
+        {
+            label: 'Pending',
+            value: pendingTasks,
+            icon: Clock3,
+        },
+        {
+            label: 'Completed',
+            value: completedTasks,
+            icon: CheckCircle2,
+        },
+        {
+            label: 'Categories',
+            value: categories.length,
+            icon: Layers3,
+        },
+        {
+            label: 'Tags',
+            value: tags.length,
+            icon: Tags,
+        },
+    ]
 
     useEffect(() => {
         const loadDashboard = async () => {
@@ -65,7 +95,7 @@ export function DashboardPage() {
                 setTags(tagsData)
                 setTasks(tasksByProject.flat())
             } catch {
-                setError('No se pudieron cargar los datos del panel principal.')
+                setError('Could not load the dashboard data.')
             } finally {
                 setLoading(false)
             }
@@ -77,34 +107,44 @@ export function DashboardPage() {
     if (loading) {
         return (
             <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center font-semibold text-slate-500 shadow-sm">
-                Cargando dashboard...
+                Loading dashboard...
             </div>
         )
     }
 
     return (
-        <div className="space-y-8">
-            <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-8 text-white shadow-xl shadow-blue-900/20">
-                <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-                    <div>
-                        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold ring-1 ring-white/15 backdrop-blur">
+        <div className="space-y-4">
+            <section className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-950 p-5 text-white shadow-xl shadow-blue-900/20">
+                <div className="flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
+                    <div className="min-w-0">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold ring-1 ring-white/15 backdrop-blur">
                             <Sparkles className="h-4 w-4" />
-                            Panel principal
+                            Dashboard
                         </div>
 
-                        <h1 className="mt-5 max-w-3xl text-4xl font-black tracking-tight">
-                            Vista general de tus proyectos y tareas.
+                        <h1 className="mt-3 max-w-3xl text-2xl font-black tracking-tight xl:text-3xl">
+                            Overview of your projects and tasks.
                         </h1>
 
-                        <p className="mt-4 max-w-2xl leading-7 text-blue-100">
-                            Consulta rápidamente el estado de tu trabajo, tareas pendientes,
-                            proyectos activos, categorías y etiquetas creadas.
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
+                            Quickly check the status of your work, pending tasks,
+                            active projects, created categories, and tags.
                         </p>
                     </div>
 
-                    <div className="rounded-3xl bg-white/10 px-6 py-5 ring-1 ring-white/15 backdrop-blur">
-                        <p className="text-sm text-blue-100">Progreso general</p>
-                        <p className="mt-1 text-4xl font-black">{completionRate}%</p>
+                    <div className="flex shrink-0 flex-wrap items-center justify-start gap-3 xl:justify-end">
+                        {dashboardStats.map((stat) => (
+                            <HeroStat key={stat.label} {...stat} />
+                        ))}
+
+                        <div className="ml-0 rounded-3xl bg-white/10 px-4 py-3 ring-1 ring-white/15 backdrop-blur xl:ml-2">
+                            <p className="text-xs font-semibold text-blue-100">
+                                Overall progress
+                            </p>
+                            <p className="mt-0.5 text-2xl font-black">
+                                {completionRate}%
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -115,176 +155,135 @@ export function DashboardPage() {
                 </div>
             )}
 
-            <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-                <StatCard
-                    label="Proyectos"
-                    value={projects.length}
-                    icon={FolderKanban}
-                    color="blue"
-                />
+            <section className="grid items-start gap-4 xl:grid-cols-3">
+                <HolidaysWidget />
 
-                <StatCard
-                    label="Pendientes"
-                    value={pendingTasks}
-                    icon={Clock3}
-                    color="amber"
-                />
-
-                <StatCard
-                    label="Completadas"
-                    value={completedTasks}
-                    icon={CheckCircle2}
-                    color="emerald"
-                />
-
-                <StatCard
-                    label="Categorías"
-                    value={categories.length}
-                    icon={Layers3}
-                    color="indigo"
-                />
-
-                <StatCard
-                    label="Etiquetas"
-                    value={tags.length}
-                    icon={Tags}
-                    color="pink"
-                />
-            </section>
-
-            <HolidaysWidget />
-
-            <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <h2 className="text-xl font-black text-slate-950">
-                                Proyectos recientes
-                            </h2>
-
-                            <p className="mt-1 text-sm text-slate-500">
-                                Últimos espacios de trabajo creados.
-                            </p>
-                        </div>
-
+                <DashboardPanel
+                    title="Recent projects"
+                    subtitle="Latest created workspaces."
+                    action={
                         <Link
                             to="/projects"
-                            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-500"
+                            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-blue-500"
                         >
-                            Ver todos
-                            <ArrowRight className="h-4 w-4" />
+                            View all
+                            <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
-                    </div>
+                    }
+                >
+                    {recentProjects.length === 0 ? (
+                        <EmptyState
+                            title="There are no projects yet."
+                            description="Create your first project to start organizing your tasks."
+                        />
+                    ) : (
+                        recentProjects.map((project) => (
+                            <Link
+                                key={project.id}
+                                to={`/projects/${project.id}`}
+                                className="block rounded-2xl border border-slate-200 bg-white px-3.5 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                            >
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <h3 className="truncate text-sm font-black text-slate-950">
+                                            {project.name}
+                                        </h3>
 
-                    <div className="mt-6 space-y-4">
-                        {recentProjects.length === 0 ? (
-                            <EmptyState
-                                title="Todavía no hay proyectos."
-                                description="Crea tu primer proyecto para empezar a organizar tus tareas."
-                            />
-                        ) : (
-                            recentProjects.map((project) => (
-                                <Link
-                                    key={project.id}
-                                    to={`/projects/${project.id}`}
-                                    className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                                >
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div>
-                                            <h3 className="font-black text-slate-950">
-                                                {project.name}
-                                            </h3>
-
-                                            <p className="mt-1 line-clamp-1 text-sm text-slate-500">
-                                                {project.description || 'Sin descripción'}
-                                            </p>
-                                        </div>
-
-                                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-600">
-                                            {project.taskCount} tareas
-                                        </span>
+                                        <p className="mt-1 line-clamp-1 text-xs text-slate-500">
+                                            {project.description || 'No description'}
+                                        </p>
                                     </div>
-                                </Link>
-                            ))
-                        )}
-                    </div>
-                </div>
 
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 className="text-xl font-black text-slate-950">
-                        Tareas importantes
-                    </h2>
+                                    <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-600">
+                                        {project.taskCount} tasks
+                                    </span>
+                                </div>
+                            </Link>
+                        ))
+                    )}
+                </DashboardPanel>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                        Tareas pendientes con prioridad alta.
-                    </p>
+                <DashboardPanel
+                    title="Important tasks"
+                    subtitle="Pending high-priority tasks."
+                >
+                    {urgentTasks.length === 0 ? (
+                        <EmptyState
+                            title="There are no urgent tasks."
+                            description="High-priority tasks will appear here."
+                        />
+                    ) : (
+                        urgentTasks.map((task) => (
+                            <article
+                                key={task.id}
+                                className="rounded-2xl border border-red-100 bg-red-50/60 px-3.5 py-3"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <h3 className="line-clamp-1 text-sm font-black text-slate-950">
+                                            {task.title}
+                                        </h3>
 
-                    <div className="mt-6 space-y-4">
-                        {urgentTasks.length === 0 ? (
-                            <EmptyState
-                                title="No hay tareas urgentes."
-                                description="Las tareas con prioridad alta aparecerán aquí."
-                            />
-                        ) : (
-                            urgentTasks.map((task) => (
-                                <article
-                                    key={task.id}
-                                    className="rounded-3xl border border-red-100 bg-red-50/60 p-5"
-                                >
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <h3 className="font-black text-slate-950">
-                                                {task.title}
-                                            </h3>
-
-                                            <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-                                                {task.description || 'Sin descripción'}
-                                            </p>
-                                        </div>
-
-                                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-600">
-                                            High
-                                        </span>
+                                        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                                            {task.description || 'No description'}
+                                        </p>
                                     </div>
-                                </article>
-                            ))
-                        )}
-                    </div>
-                </div>
+
+                                    <span className="shrink-0 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-black text-red-600">
+                                        High
+                                    </span>
+                                </div>
+                            </article>
+                        ))
+                    )}
+                </DashboardPanel>
             </section>
         </div>
     )
 }
 
-interface StatCardProps {
+interface DashboardStat {
     label: string
     value: number
-    icon: React.ElementType
-    color: 'blue' | 'amber' | 'emerald' | 'indigo' | 'pink'
+    icon: LucideIcon
 }
 
-function StatCard({ label, value, icon: Icon, color }: StatCardProps) {
-    const styles = {
-        blue: 'bg-blue-50 text-blue-600',
-        amber: 'bg-amber-50 text-amber-600',
-        emerald: 'bg-emerald-50 text-emerald-600',
-        indigo: 'bg-indigo-50 text-indigo-600',
-        pink: 'bg-pink-50 text-pink-600',
-    }
-
+function HeroStat({ label, value, icon: Icon }: DashboardStat) {
     return (
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-center justify-between">
-                <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${styles[color]}`}
-                >
-                    <Icon className="h-6 w-6" />
+        <div className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/15 backdrop-blur">
+            <Icon className="h-4 w-4 text-blue-100" />
+            <div className="leading-none">
+                <p className="text-base font-black text-white">{value}</p>
+                <p className="mt-1 text-[11px] font-semibold text-blue-100">{label}</p>
+            </div>
+        </div>
+    )
+}
+
+function DashboardPanel({
+    title,
+    subtitle,
+    action,
+    children,
+}: {
+    title: string
+    subtitle: string
+    action?: ReactNode
+    children: ReactNode
+}) {
+    return (
+        <div className="h-full rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <h2 className="text-base font-black text-slate-950">{title}</h2>
+                    <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>
                 </div>
+
+                {action}
             </div>
 
-            <p className="mt-6 text-3xl font-black text-slate-950">{value}</p>
-            <p className="mt-1 text-sm font-semibold text-slate-500">{label}</p>
-        </article>
+            <div className="mt-4 space-y-2.5">{children}</div>
+        </div>
     )
 }
 
@@ -296,9 +295,9 @@ function EmptyState({
     description: string
 }) {
     return (
-        <div className="rounded-3xl bg-slate-50 p-8 text-center">
-            <p className="font-bold text-slate-700">{title}</p>
-            <p className="mt-1 text-sm text-slate-500">{description}</p>
+        <div className="rounded-2xl bg-slate-50 p-5 text-center">
+            <p className="text-sm font-bold text-slate-700">{title}</p>
+            <p className="mt-1 text-xs text-slate-500">{description}</p>
         </div>
     )
 }
